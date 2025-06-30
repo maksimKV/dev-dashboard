@@ -81,3 +81,32 @@
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: none; }
 }
+
+.ui-prefs-row, .accessibility-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.form-actions-block {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 700px) {
+  .ui-prefs-row, .accessibility-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.7rem;
+  }
+  .form-actions-block {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    margin-top: 0.7rem;
+  }
+}

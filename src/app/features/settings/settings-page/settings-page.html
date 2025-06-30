@@ -48,20 +48,24 @@
   <mat-card class="settings-section">
     <h2>UI Preferences</h2>
     <form (ngSubmit)="saveUiPrefs()" #uiForm="ngForm">
-      <mat-form-field appearance="fill" style="min-width: 180px; margin-right: 2rem;">
-        <mat-label>Sidebar Position</mat-label>
-        <mat-select [(ngModel)]="sidebarPosition" name="sidebarPosition">
-          <mat-option *ngFor="let pos of sidebarPositions" [value]="pos.value">{{ pos.label }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-slide-toggle [(ngModel)]="compactMode" name="compactMode" style="margin-right: 2rem;">Compact Mode</mat-slide-toggle>
-      <mat-form-field appearance="fill" style="min-width: 140px;">
-        <mat-label>Font Size</mat-label>
-        <mat-select [(ngModel)]="fontSize" name="fontSize">
-          <mat-option *ngFor="let size of fontSizes" [value]="size.value">{{ size.label }}</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <button mat-raised-button color="primary" type="submit" style="margin-top: 1rem;">Save UI Preferences</button>
+      <div class="ui-prefs-row">
+        <mat-form-field appearance="fill" style="min-width: 180px; margin-right: 2rem;">
+          <mat-label>Sidebar Position</mat-label>
+          <mat-select [(ngModel)]="sidebarPosition" name="sidebarPosition">
+            <mat-option *ngFor="let pos of sidebarPositions" [value]="pos.value">{{ pos.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-slide-toggle [(ngModel)]="compactMode" name="compactMode" style="margin-right: 2rem;">Compact Mode</mat-slide-toggle>
+        <mat-form-field appearance="fill" style="min-width: 140px;">
+          <mat-label>Font Size</mat-label>
+          <mat-select [(ngModel)]="fontSize" name="fontSize">
+            <mat-option *ngFor="let size of fontSizes" [value]="size.value">{{ size.label }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="form-actions-block">
+        <button mat-raised-button color="primary" type="submit">Save UI Preferences</button>
+      </div>
     </form>
     <p class="settings-hint">Customize sidebar position, enable compact mode, and adjust font size for your dashboard.</p>
   </mat-card>
@@ -69,9 +73,13 @@
   <mat-card class="settings-section">
     <h2>Accessibility</h2>
     <form (ngSubmit)="saveAccessibilityPrefs()" #accessForm="ngForm">
-      <mat-slide-toggle [(ngModel)]="highContrast" name="highContrast" style="margin-right: 2rem;">High Contrast Mode</mat-slide-toggle>
-      <mat-slide-toggle [(ngModel)]="keyboardShortcuts" name="keyboardShortcuts">Enable Keyboard Shortcuts</mat-slide-toggle>
-      <button mat-raised-button color="primary" type="submit" style="margin-top: 1rem;">Save Accessibility</button>
+      <div class="accessibility-row">
+        <mat-slide-toggle [(ngModel)]="highContrast" name="highContrast" style="margin-right: 2rem;">High Contrast Mode</mat-slide-toggle>
+        <mat-slide-toggle [(ngModel)]="keyboardShortcuts" name="keyboardShortcuts">Enable Keyboard Shortcuts</mat-slide-toggle>
+      </div>
+      <div class="form-actions-block">
+        <button mat-raised-button color="primary" type="submit">Save Accessibility</button>
+      </div>
     </form>
     <p class="settings-hint">High contrast mode improves visibility. Keyboard shortcuts help power users navigate and control the app.</p>
   </mat-card>
