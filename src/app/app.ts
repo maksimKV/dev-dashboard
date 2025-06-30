@@ -1,6 +1,6 @@
-import { Component, Inject, PLATFORM_ID, OnInit, DoCheck } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, OnInit, DoCheck, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MarkdownModule } from 'ngx-markdown';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -41,10 +41,12 @@ export class App implements OnInit, DoCheck {
   sidenavOpened = true;
   isMobile = false;
   sidebarPosition: 'left' | 'right' = 'left';
+  @ViewChild('sidenav') sidenav!: MatSidenav;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private breakpointObserver: BreakpointObserver
+    private breakpointObserver: BreakpointObserver,
+    private cdr: ChangeDetectorRef
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
@@ -70,15 +72,19 @@ export class App implements OnInit, DoCheck {
   }
 
   setupResponsiveSidenav() {
-    this.breakpointObserver.observe([Breakpoints.Handset, Breakpoints.Tablet]).subscribe(result => {
-      this.isMobile = result.matches;
-      if (this.isMobile) {
+    this.breakpointObserver.observe([Breakpoints.Handset]).subscribe(result => {
+      if (result.matches) {
+        this.isMobile = true;
         this.sidenavMode = 'over';
         this.sidenavOpened = false;
+        setTimeout(() => this.sidenav.close(), 0);
       } else {
+        this.isMobile = false;
         this.sidenavMode = 'side';
         this.sidenavOpened = true;
+        setTimeout(() => this.sidenav.open(), 0);
       }
+      setTimeout(() => this.cdr.detectChanges(), 0);
     });
   }
 
