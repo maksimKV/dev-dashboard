@@ -31,7 +31,6 @@ export class FocusTimer implements OnDestroy {
   completedFocusSessions = 0;
   totalWorkSeconds = 0;
   isBrowser: boolean;
-  loadError: string | null = null;
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object, private cdr: ChangeDetectorRef) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -112,26 +111,14 @@ export class FocusTimer implements OnDestroy {
     if (!this.isBrowser) return;
     const data = localStorage.getItem('focus-timer');
     if (data) {
-      try {
-        const s = JSON.parse(data);
-        this.workDuration = s.workDuration ?? 25;
-        this.breakDuration = s.breakDuration ?? 5;
-        this.timeLeft = s.timeLeft ?? this.workDuration * 60;
-        this.isRunning = false; // always start paused
-        this.isWork = s.isWork ?? true;
-        this.completedFocusSessions = s.completedFocusSessions ?? 0;
-        this.totalWorkSeconds = s.totalWorkSeconds ?? 0;
-        this.loadError = null;
-      } catch (e) {
-        this.workDuration = 25;
-        this.breakDuration = 5;
-        this.timeLeft = this.workDuration * 60;
-        this.isRunning = false;
-        this.isWork = true;
-        this.completedFocusSessions = 0;
-        this.totalWorkSeconds = 0;
-        this.loadError = 'Failed to load timer data. Data may be corrupted.';
-      }
+      const s = JSON.parse(data);
+      this.workDuration = s.workDuration ?? 25;
+      this.breakDuration = s.breakDuration ?? 5;
+      this.timeLeft = s.timeLeft ?? this.workDuration * 60;
+      this.isRunning = false; // always start paused
+      this.isWork = s.isWork ?? true;
+      this.completedFocusSessions = s.completedFocusSessions ?? 0;
+      this.totalWorkSeconds = s.totalWorkSeconds ?? 0;
     }
   }
 

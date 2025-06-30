@@ -19,7 +19,6 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class SettingsPage {
   isBrowser: boolean;
-  loadError: string | null = null;
   // Export all relevant app data as JSON
   exportData() {
     if (!this.isBrowser) return;
@@ -30,15 +29,12 @@ export class SettingsPage {
       snippets: JSON.parse(localStorage.getItem('snippets') || '[]'),
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    // For more complex DOM manipulation, consider using Renderer2
-    if (typeof document !== 'undefined') {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'dev-dashboard-backup.json';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dev-dashboard-backup.json';
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   // Import data from JSON file
@@ -57,7 +53,6 @@ export class SettingsPage {
         if (data.snippets) localStorage.setItem('snippets', JSON.stringify(data.snippets));
         alert('Data imported successfully!');
       } catch (e) {
-        console.error('Failed to import data:', e);
         alert('Invalid file or format.');
       }
     };
@@ -91,13 +86,11 @@ export class SettingsPage {
   focusDuration = 25;
   breakDuration = 5;
   features = {
-    dashboard: false,
-    tasks: false,
-    notes: false,
-    timer: false,
-    snippets: false,
-    stats: false,
-    settings: false
+    tasks: true,
+    notes: true,
+    timer: true,
+    snippets: true,
+    stats: true,
   };
 
   // UI Preferences state
@@ -139,21 +132,7 @@ export class SettingsPage {
     this.breakDuration = +(localStorage.getItem('focus-break-duration') || 5);
     const features = localStorage.getItem('enabled-features');
     if (features) {
-      try {
-        this.features = { ...this.features, ...JSON.parse(features) };
-        this.loadError = null;
-      } catch (e) {
-        this.features = {
-          dashboard: false,
-          tasks: false,
-          notes: false,
-          timer: false,
-          snippets: false,
-          stats: false,
-          settings: false
-        };
-        this.loadError = 'Failed to load productivity preferences. Data may be corrupted.';
-      }
+      this.features = { ...this.features, ...JSON.parse(features) };
     }
   }
 

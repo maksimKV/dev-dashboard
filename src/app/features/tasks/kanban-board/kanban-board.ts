@@ -31,7 +31,6 @@ export class KanbanBoard {
   newTaskTitle = '';
   newTaskDescription = '';
   isBrowser: boolean;
-  loadError: string | null = null;
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -86,18 +85,10 @@ export class KanbanBoard {
     if (!this.isBrowser) return;
     const data = localStorage.getItem('kanban-tasks');
     if (data) {
-      try {
-        const parsed = JSON.parse(data);
-        this.todo = parsed.todo || [];
-        this.inProgress = parsed.inProgress || [];
-        this.done = parsed.done || [];
-        this.loadError = null;
-      } catch (e) {
-        this.todo = [];
-        this.inProgress = [];
-        this.done = [];
-        this.loadError = 'Failed to load tasks. Data may be corrupted.';
-      }
+      const parsed = JSON.parse(data);
+      this.todo = parsed.todo || [];
+      this.inProgress = parsed.inProgress || [];
+      this.done = parsed.done || [];
     }
   }
 }
