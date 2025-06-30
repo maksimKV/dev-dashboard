@@ -1,4 +1,4 @@
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, OnInit } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,7 +12,7 @@ import { ChartType, ChartData } from 'chart.js';
   templateUrl: './stats-dashboard-page.html',
   styleUrl: './stats-dashboard-page.scss'
 })
-export class StatsDashboardPage {
+export class StatsDashboardPage implements OnInit {
   isBrowser: boolean;
   // Task stats
   totalTasks = 0;
@@ -40,6 +40,10 @@ export class StatsDashboardPage {
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
+  }
+
+  ngOnInit() {
+    this.loadStats();
   }
 
   loadStats() {
