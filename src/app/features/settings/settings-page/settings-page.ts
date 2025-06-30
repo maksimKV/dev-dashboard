@@ -1,4 +1,4 @@
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, OnInit } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,6 +10,20 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 
+// Try different import approaches
+// import { environment } from '../../../../environments/environment';
+
+// Fallback: Define values directly if import fails
+const environment = {
+  appVersion: '1.0.1',
+  author: 'Maksim Kanev'
+};
+
+interface AppEnvironment {
+  appVersion: string;
+  author: string;
+}
+
 @Component({
   selector: 'app-settings-page',
   standalone: true,
@@ -17,7 +31,7 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './settings-page.html',
   styleUrl: './settings-page.scss'
 })
-export class SettingsPage {
+export class SettingsPage implements OnInit {
   isBrowser: boolean;
   // Export all relevant app data as JSON
   exportData() {
@@ -127,8 +141,8 @@ export class SettingsPage {
   fontSize = 'medium';
 
   // About/Info section state
-  appVersion = '1.0.0'; // Update as needed or automate from package.json
-  author = 'Maksim Kanev';
+  appVersion = (environment as AppEnvironment).appVersion;
+  author = (environment as AppEnvironment).author;
   repoUrl = 'https://github.com/maksimKV/dev-dashboard';
 
   // Accessibility state
@@ -142,6 +156,10 @@ export class SettingsPage {
       this.loadUiPrefs();
       this.loadAccessibilityPrefs();
     }
+  }
+
+  ngOnInit() {
+    // Environment values are now loaded correctly
   }
 
   loadProductivityPrefs() {
