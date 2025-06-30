@@ -60,3 +60,12 @@
   </form>
   <p class="settings-hint">Customize sidebar position, enable compact mode, and adjust font size for your dashboard.</p>
 </mat-card>
+
+<mat-card class="settings-section">
+  <h2>About</h2>
+  <div class="about-info">
+    <div><strong>App Version:</strong> {{ appVersion }}</div>
+    <div><strong>Author:</strong> {{ author }}</div>
+    <div><strong>GitHub:</strong> <a href="{{ repoUrl }}" target="_blank" rel="noopener">{{ repoUrl }}</a></div>
+  </div>
+</mat-card>

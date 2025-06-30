@@ -106,6 +106,11 @@ export class SettingsPage {
   ];
   fontSize = 'medium';
 
+  // About/Info section state
+  appVersion = '1.0.0'; // Update as needed or automate from package.json
+  author = 'Maksim Kanev';
+  repoUrl = 'https://github.com/maksimKV/dev-dashboard';
+
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
