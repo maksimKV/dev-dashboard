@@ -1,4 +1,4 @@
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,6 +11,7 @@ import { HighlightModule } from 'ngx-highlightjs';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { Snippet } from '../../../shared/models/snippet.model';
 import { isPlatformBrowser } from '@angular/common';
+import { AuthService } from '../../../shared/services/auth.service';
 
 @Component({
   selector: 'app-snippets-page',
@@ -31,7 +32,7 @@ import { isPlatformBrowser } from '@angular/common';
   templateUrl: './snippets-page.html',
   styleUrl: './snippets-page.scss'
 })
-export class SnippetsPage {
+export class SnippetsPage implements OnInit {
   snippets: Snippet[] = [];
   search = '';
   filterLang = '';
@@ -41,12 +42,17 @@ export class SnippetsPage {
     'typescript', 'javascript', 'python', 'html', 'css', 'json', 'bash', 'c', 'cpp', 'java', 'go', 'php', 'ruby', 'sql', 'yaml', 'markdown'
   ];
   isBrowser: boolean;
+  isLoading = false;
 
   constructor(
     private clipboard: Clipboard,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private authService: AuthService
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
+  }
+
+  ngOnInit() {
     this.loadSnippets();
   }
 
@@ -108,7 +114,17 @@ export class SnippetsPage {
 
   saveSnippets() {
     if (!this.isBrowser) return;
-    localStorage.setItem('snippets', JSON.stringify(this.snippets));
+    
+    this.authService.updateSnippets(this.snippets).subscribe({
+      next: () => {
+        console.log('Snippets saved successfully');
+      },
+      error: (error) => {
+        console.error('Failed to save snippets:', error);
+        // Fallback to localStorage if API fails
+        localStorage.setItem('snippets', JSON.stringify(this.snippets));
+      }
+    });
   }
 
   loadSnippets() {
@@ -116,17 +132,30 @@ export class SnippetsPage {
       this.snippets = [];
       return;
     }
-    const data = localStorage.getItem('snippets');
-    if (data) {
-      try {
-        this.snippets = JSON.parse(data);
-      } catch (e) {
-        this.snippets = [];
-        console.error('Failed to parse snippets:', e);
+    
+    this.isLoading = true;
+    this.authService.getUserData().subscribe({
+      next: (userData) => {
+        this.snippets = userData.snippets || [];
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Failed to load snippets from API:', error);
+        // Fallback to localStorage
+        const data = localStorage.getItem('snippets');
+        if (data) {
+          try {
+            this.snippets = JSON.parse(data);
+          } catch (e) {
+            this.snippets = [];
+            console.error('Failed to parse snippets:', e);
+          }
+        } else {
+          this.snippets = [];
+        }
+        this.isLoading = false;
       }
-    } else {
-      this.snippets = [];
-    }
+    });
   }
 
   cancelEdit() {

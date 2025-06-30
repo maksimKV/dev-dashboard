@@ -1,10 +1,11 @@
-import { Component, OnDestroy, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy, Inject, PLATFORM_ID, ChangeDetectorRef, OnInit } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { AuthService } from '../../../shared/services/auth.service';
 
 @Component({
   selector: 'app-focus-timer',
@@ -20,7 +21,7 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './focus-timer.html',
   styleUrl: './focus-timer.scss',
 })
-export class FocusTimer implements OnDestroy {
+export class FocusTimer implements OnInit, OnDestroy {
   workDuration = 25; // minutes
   breakDuration = 5; // minutes
   timeLeft = this.workDuration * 60; // seconds
@@ -31,9 +32,17 @@ export class FocusTimer implements OnDestroy {
   completedFocusSessions = 0;
   totalWorkSeconds = 0;
   isBrowser: boolean;
+  isLoading = false;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object, private cdr: ChangeDetectorRef) {
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object, 
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
+  ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
+  }
+
+  ngOnInit() {
     if (this.isBrowser) {
       this.loadState();
     }
@@ -96,7 +105,8 @@ export class FocusTimer implements OnDestroy {
 
   saveState() {
     if (!this.isBrowser) return;
-    localStorage.setItem('focus-timer', JSON.stringify({
+    
+    const state = {
       workDuration: this.workDuration,
       breakDuration: this.breakDuration,
       timeLeft: this.timeLeft,
@@ -104,15 +114,27 @@ export class FocusTimer implements OnDestroy {
       isWork: this.isWork,
       completedFocusSessions: this.completedFocusSessions,
       totalWorkSeconds: this.totalWorkSeconds
-    }));
+    };
+
+    this.authService.updateFocusTimer(state).subscribe({
+      next: () => {
+        console.log('Timer state saved successfully');
+      },
+      error: (error) => {
+        console.error('Failed to save timer state:', error);
+        // Fallback to localStorage if API fails
+        localStorage.setItem('focus-timer', JSON.stringify(state));
+      }
+    });
   }
 
   loadState() {
     if (!this.isBrowser) return;
-    const data = localStorage.getItem('focus-timer');
-    if (data) {
-      try {
-        const s = JSON.parse(data);
+    
+    this.isLoading = true;
+    this.authService.getUserData().subscribe({
+      next: (userData) => {
+        const s = userData.focusTimer || {};
         this.workDuration = s.workDuration ?? 25;
         this.breakDuration = s.breakDuration ?? 5;
         this.timeLeft = s.timeLeft ?? this.workDuration * 60;
@@ -120,18 +142,37 @@ export class FocusTimer implements OnDestroy {
         this.isWork = s.isWork ?? true;
         this.completedFocusSessions = s.completedFocusSessions ?? 0;
         this.totalWorkSeconds = s.totalWorkSeconds ?? 0;
-      } catch (e) {
-        // fallback to defaults if corrupted
-        this.workDuration = 25;
-        this.breakDuration = 5;
-        this.timeLeft = 25 * 60;
-        this.isRunning = false;
-        this.isWork = true;
-        this.completedFocusSessions = 0;
-        this.totalWorkSeconds = 0;
-        console.error('Failed to parse focus-timer data:', e);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Failed to load timer state from API:', error);
+        // Fallback to localStorage
+        const data = localStorage.getItem('focus-timer');
+        if (data) {
+          try {
+            const s = JSON.parse(data);
+            this.workDuration = s.workDuration ?? 25;
+            this.breakDuration = s.breakDuration ?? 5;
+            this.timeLeft = s.timeLeft ?? this.workDuration * 60;
+            this.isRunning = false; // always start paused
+            this.isWork = s.isWork ?? true;
+            this.completedFocusSessions = s.completedFocusSessions ?? 0;
+            this.totalWorkSeconds = s.totalWorkSeconds ?? 0;
+          } catch (e) {
+            // fallback to defaults if corrupted
+            this.workDuration = 25;
+            this.breakDuration = 5;
+            this.timeLeft = 25 * 60;
+            this.isRunning = false;
+            this.isWork = true;
+            this.completedFocusSessions = 0;
+            this.totalWorkSeconds = 0;
+            console.error('Failed to parse focus-timer data:', e);
+          }
+        }
+        this.isLoading = false;
       }
-    }
+    });
   }
 
   ngOnDestroy() {

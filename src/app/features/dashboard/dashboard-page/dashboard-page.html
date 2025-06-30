@@ -2,6 +2,13 @@
   <div class="dashboard-welcome-header">
     <mat-icon class="dashboard-icon" fontIcon="dashboard"></mat-icon>
     <h1>Welcome to Dev Dashboard!</h1>
+    <div class="user-info" *ngIf="currentUser">
+      <span>Welcome back, {{ currentUser.username }}!</span>
+      <button (click)="logout()" class="logout-btn">
+        <mat-icon fontIcon="logout"></mat-icon>
+        Logout
+      </button>
+    </div>
   </div>
   <p class="dashboard-subtitle">Your personal productivity hub for developers.</p>
   <ul class="dashboard-feature-list">
