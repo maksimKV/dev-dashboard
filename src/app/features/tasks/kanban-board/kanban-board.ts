@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
 import { Task } from '../../../shared/models/task.model';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -6,7 +7,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-kanban-board',
@@ -30,9 +30,13 @@ export class KanbanBoard {
 
   newTaskTitle = '';
   newTaskDescription = '';
+  isBrowser: boolean;
 
-  constructor() {
-    this.loadTasks();
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      this.loadTasks();
+    }
   }
 
   drop(event: CdkDragDrop<Task[]>) {
@@ -68,6 +72,7 @@ export class KanbanBoard {
   }
 
   saveTasks() {
+    if (!this.isBrowser) return;
     const data = {
       todo: this.todo,
       inProgress: this.inProgress,
@@ -77,6 +82,7 @@ export class KanbanBoard {
   }
 
   loadTasks() {
+    if (!this.isBrowser) return;
     const data = localStorage.getItem('kanban-tasks');
     if (data) {
       const parsed = JSON.parse(data);
