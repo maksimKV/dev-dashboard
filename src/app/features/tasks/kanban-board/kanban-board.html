@@ -1,0 +1,44 @@
+<div class="kanban-board">
+  <form class="add-task-form" (ngSubmit)="addTask()">
+    <mat-form-field appearance="outline">
+      <input matInput placeholder="Task title" [(ngModel)]="newTaskTitle" name="title" required />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <textarea matInput placeholder="Description (optional)" [(ngModel)]="newTaskDescription" name="description"></textarea>
+    </mat-form-field>
+    <button mat-raised-button color="primary" type="submit">Add Task</button>
+  </form>
+
+  <div class="columns">
+    <div class="column">
+      <h3>To Do</h3>
+      <div cdkDropList [cdkDropListData]="todo" class="task-list" (cdkDropListDropped)="drop($event)">
+        <div *ngFor="let task of todo; let i = index" cdkDrag class="task-card">
+          <div class="task-title">{{ task.title }}</div>
+          <div class="task-desc" *ngIf="task.description">{{ task.description }}</div>
+          <button mat-icon-button color="warn" (click)="deleteTask(todo, i)"><mat-icon>delete</mat-icon></button>
+        </div>
+      </div>
+    </div>
+    <div class="column">
+      <h3>In Progress</h3>
+      <div cdkDropList [cdkDropListData]="inProgress" class="task-list" (cdkDropListDropped)="drop($event)">
+        <div *ngFor="let task of inProgress; let i = index" cdkDrag class="task-card">
+          <div class="task-title">{{ task.title }}</div>
+          <div class="task-desc" *ngIf="task.description">{{ task.description }}</div>
+          <button mat-icon-button color="warn" (click)="deleteTask(inProgress, i)"><mat-icon>delete</mat-icon></button>
+        </div>
+      </div>
+    </div>
+    <div class="column">
+      <h3>Done</h3>
+      <div cdkDropList [cdkDropListData]="done" class="task-list" (cdkDropListDropped)="drop($event)">
+        <div *ngFor="let task of done; let i = index" cdkDrag class="task-card">
+          <div class="task-title">{{ task.title }}</div>
+          <div class="task-desc" *ngIf="task.description">{{ task.description }}</div>
+          <button mat-icon-button color="warn" (click)="deleteTask(done, i)"><mat-icon>delete</mat-icon></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
