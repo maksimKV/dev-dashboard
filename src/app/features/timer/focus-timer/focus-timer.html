@@ -1,0 +1,29 @@
+<div class="focus-timer">
+  <form class="settings" (ngSubmit)="updateDurations()">
+    <mat-form-field appearance="outline">
+      <mat-label>Work (min)</mat-label>
+      <input matInput type="number" min="1" [(ngModel)]="workDuration" name="workDuration" required />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Break (min)</mat-label>
+      <input matInput type="number" min="1" [(ngModel)]="breakDuration" name="breakDuration" required />
+    </mat-form-field>
+    <button mat-raised-button color="primary" type="submit">Set</button>
+  </form>
+
+  <div class="timer-display" [class.break]="!isWork">
+    <span class="minutes">{{ minutes }}</span>:<span class="seconds">{{ seconds }}</span>
+    <div class="interval-label">{{ isWork ? 'Work' : 'Break' }}</div>
+  </div>
+
+  <div class="controls">
+    <button mat-raised-button color="primary" (click)="start()" [disabled]="isRunning">Start</button>
+    <button mat-raised-button color="accent" (click)="pause()" [disabled]="!isRunning">Pause</button>
+    <button mat-raised-button color="warn" (click)="reset()">Reset</button>
+  </div>
+
+  <div class="stats">
+    <div><mat-icon>check_circle</mat-icon> Focus Sessions: {{ completedFocusSessions }}</div>
+    <div><mat-icon>timer</mat-icon> Time worked: {{ (totalWorkSeconds / 60) | number:'1.0-0' }} min</div>
+  </div>
+</div>
