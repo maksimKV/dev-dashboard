@@ -96,8 +96,21 @@ export class App implements OnInit, DoCheck {
     if (!this.isBrowser) return;
     const features = localStorage.getItem('enabled-features');
     if (features) {
-      const parsed = JSON.parse(features);
-      this.enabledFeatures = { ...this.enabledFeatures, ...parsed };
+      try {
+        const parsed = JSON.parse(features);
+        this.enabledFeatures = { ...this.enabledFeatures, ...parsed };
+      } catch (e) {
+        this.enabledFeatures = {
+          dashboard: true,
+          tasks: true,
+          notes: true,
+          timer: true,
+          snippets: true,
+          stats: true,
+          settings: true
+        };
+        console.error('Failed to parse enabled-features:', e);
+      }
     }
   }
 

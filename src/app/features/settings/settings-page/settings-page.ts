@@ -22,11 +22,29 @@ export class SettingsPage {
   // Export all relevant app data as JSON
   exportData() {
     if (!this.isBrowser) return;
+    let kanban = { todo: [], inProgress: [], done: [] };
+    let timer = {};
+    let snippets = [];
+    try {
+      kanban = JSON.parse(localStorage.getItem('kanban-tasks') || '{"todo":[],"inProgress":[],"done":[]}');
+    } catch (e) {
+      console.error('Failed to parse kanban-tasks:', e);
+    }
+    try {
+      timer = JSON.parse(localStorage.getItem('focus-timer') || '{}');
+    } catch (e) {
+      console.error('Failed to parse focus-timer:', e);
+    }
+    try {
+      snippets = JSON.parse(localStorage.getItem('snippets') || '[]');
+    } catch (e) {
+      console.error('Failed to parse snippets:', e);
+    }
     const data = {
-      kanban: JSON.parse(localStorage.getItem('kanban-tasks') || '{"todo":[],"inProgress":[],"done":[]}'),
-      timer: JSON.parse(localStorage.getItem('focus-timer') || '{}'),
+      kanban,
+      timer,
       notes: localStorage.getItem('markdown-note') || '',
-      snippets: JSON.parse(localStorage.getItem('snippets') || '[]'),
+      snippets
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -54,6 +72,7 @@ export class SettingsPage {
         alert('Data imported successfully!');
       } catch (e) {
         alert('Invalid file or format.');
+        console.error('Failed to parse imported data:', e);
       }
     };
     reader.readAsText(file);
@@ -132,7 +151,18 @@ export class SettingsPage {
     this.breakDuration = +(localStorage.getItem('focus-break-duration') || 5);
     const features = localStorage.getItem('enabled-features');
     if (features) {
-      this.features = { ...this.features, ...JSON.parse(features) };
+      try {
+        this.features = { ...this.features, ...JSON.parse(features) };
+      } catch (e) {
+        this.features = {
+          tasks: true,
+          notes: true,
+          timer: true,
+          snippets: true,
+          stats: true
+        };
+        console.error('Failed to parse enabled-features:', e);
+      }
     }
   }
 

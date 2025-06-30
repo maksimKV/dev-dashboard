@@ -117,7 +117,16 @@ export class SnippetsPage {
       return;
     }
     const data = localStorage.getItem('snippets');
-    this.snippets = data ? JSON.parse(data) : [];
+    if (data) {
+      try {
+        this.snippets = JSON.parse(data);
+      } catch (e) {
+        this.snippets = [];
+        console.error('Failed to parse snippets:', e);
+      }
+    } else {
+      this.snippets = [];
+    }
   }
 
   cancelEdit() {

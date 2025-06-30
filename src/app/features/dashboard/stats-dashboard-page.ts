@@ -45,7 +45,12 @@ export class StatsDashboardPage {
   loadStats() {
     if (!this.isBrowser) return;
     // Kanban tasks
-    const kanban = JSON.parse(localStorage.getItem('kanban-tasks') || '{"todo":[],"inProgress":[],"done":[]}');
+    let kanban = { todo: [], inProgress: [], done: [] };
+    try {
+      kanban = JSON.parse(localStorage.getItem('kanban-tasks') || '{"todo":[],"inProgress":[],"done":[]}');
+    } catch (e) {
+      console.error('Failed to parse kanban-tasks:', e);
+    }
     this.todo = kanban.todo?.length || 0;
     this.inProgress = kanban.inProgress?.length || 0;
     this.done = kanban.done?.length || 0;
@@ -58,7 +63,16 @@ export class StatsDashboardPage {
     };
 
     // Focus timer
-    const timer = JSON.parse(localStorage.getItem('focus-timer') || '{}');
+    interface TimerData {
+      completedFocusSessions?: number;
+      totalWorkSeconds?: number;
+    }
+    let timer: TimerData = {};
+    try {
+      timer = JSON.parse(localStorage.getItem('focus-timer') || '{}');
+    } catch (e) {
+      console.error('Failed to parse focus-timer:', e);
+    }
     this.focusSessions = timer.completedFocusSessions || 0;
     this.totalFocusMinutes = Math.floor((timer.totalWorkSeconds || 0) / 60);
 
@@ -68,7 +82,12 @@ export class StatsDashboardPage {
     this.notesWordCount = note.trim() ? note.trim().split(/\s+/).length : 0;
 
     // Snippets
-    const snippets = JSON.parse(localStorage.getItem('snippets') || '[]');
+    let snippets = [];
+    try {
+      snippets = JSON.parse(localStorage.getItem('snippets') || '[]');
+    } catch (e) {
+      console.error('Failed to parse snippets:', e);
+    }
     this.snippetsCount = snippets.length;
     if (snippets.length) {
       const langCount: Record<string, number> = {};

@@ -85,10 +85,17 @@ export class KanbanBoard {
     if (!this.isBrowser) return;
     const data = localStorage.getItem('kanban-tasks');
     if (data) {
-      const parsed = JSON.parse(data);
-      this.todo = parsed.todo || [];
-      this.inProgress = parsed.inProgress || [];
-      this.done = parsed.done || [];
+      try {
+        const parsed = JSON.parse(data);
+        this.todo = parsed.todo || [];
+        this.inProgress = parsed.inProgress || [];
+        this.done = parsed.done || [];
+      } catch (e) {
+        this.todo = [];
+        this.inProgress = [];
+        this.done = [];
+        console.error('Failed to parse kanban-tasks:', e);
+      }
     }
   }
 }

@@ -111,14 +111,26 @@ export class FocusTimer implements OnDestroy {
     if (!this.isBrowser) return;
     const data = localStorage.getItem('focus-timer');
     if (data) {
-      const s = JSON.parse(data);
-      this.workDuration = s.workDuration ?? 25;
-      this.breakDuration = s.breakDuration ?? 5;
-      this.timeLeft = s.timeLeft ?? this.workDuration * 60;
-      this.isRunning = false; // always start paused
-      this.isWork = s.isWork ?? true;
-      this.completedFocusSessions = s.completedFocusSessions ?? 0;
-      this.totalWorkSeconds = s.totalWorkSeconds ?? 0;
+      try {
+        const s = JSON.parse(data);
+        this.workDuration = s.workDuration ?? 25;
+        this.breakDuration = s.breakDuration ?? 5;
+        this.timeLeft = s.timeLeft ?? this.workDuration * 60;
+        this.isRunning = false; // always start paused
+        this.isWork = s.isWork ?? true;
+        this.completedFocusSessions = s.completedFocusSessions ?? 0;
+        this.totalWorkSeconds = s.totalWorkSeconds ?? 0;
+      } catch (e) {
+        // fallback to defaults if corrupted
+        this.workDuration = 25;
+        this.breakDuration = 5;
+        this.timeLeft = 25 * 60;
+        this.isRunning = false;
+        this.isWork = true;
+        this.completedFocusSessions = 0;
+        this.totalWorkSeconds = 0;
+        console.error('Failed to parse focus-timer data:', e);
+      }
     }
   }
 
