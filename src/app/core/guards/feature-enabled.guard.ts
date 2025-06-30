@@ -8,7 +8,10 @@ export function featureEnabledGuard(featureKey: string): CanActivateFn {
     const router = inject(Router);
     const isBrowser = isPlatformBrowser(platformId);
     if (!isBrowser) return true; // Allow SSR to render, client will handle redirect
-    const features = JSON.parse(localStorage.getItem('enabled-features') || '{}');
+    let features: Record<string, boolean> = {};
+    if (isBrowser) {
+      features = JSON.parse(localStorage.getItem('enabled-features') || '{}');
+    }
     if (features[featureKey] === false) {
       router.navigateByUrl('/dashboard');
       return false;

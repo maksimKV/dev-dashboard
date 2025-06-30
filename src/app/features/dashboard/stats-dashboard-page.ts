@@ -40,12 +40,10 @@ export class StatsDashboardPage {
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
-    if (this.isBrowser) {
-      this.loadStats();
-    }
   }
 
   loadStats() {
+    if (!this.isBrowser) return;
     // Kanban tasks
     const kanban = JSON.parse(localStorage.getItem('kanban-tasks') || '{"todo":[],"inProgress":[],"done":[]}');
     this.todo = kanban.todo?.length || 0;
