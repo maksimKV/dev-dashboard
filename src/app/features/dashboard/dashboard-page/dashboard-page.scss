@@ -19,8 +19,19 @@
 }
 
 .dashboard-icon {
-  font-size: 3rem;
+  font-size: 2.2rem;
+  height: 2.2rem;
+  width: 2.2rem;
+  min-width: 2.2rem;
+  min-height: 2.2rem;
   color: #1976d2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  vertical-align: middle;
+  position: relative;
+  top: 0;
   filter: drop-shadow(0 2px 6px rgba(25,118,210,0.12));
 }
 
@@ -80,4 +91,20 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: none; }
+}
+
+.feature-card-header mat-icon {
+  font-size: 2.2rem;
+  height: 2.2rem;
+  width: 2.2rem;
+  min-width: 2.2rem;
+  min-height: 2.2rem;
+  color: #1976d2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  vertical-align: middle;
+  position: relative;
+  top: 0;
 }
