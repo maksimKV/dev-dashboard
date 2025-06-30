@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { HighlightModule } from 'ngx-highlightjs';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { Snippet } from '../../../shared/models/snippet.model';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-snippets-page',
@@ -39,8 +40,13 @@ export class SnippetsPage {
   languages = [
     'typescript', 'javascript', 'python', 'html', 'css', 'json', 'bash', 'c', 'cpp', 'java', 'go', 'php', 'ruby', 'sql', 'yaml', 'markdown'
   ];
+  isBrowser: boolean;
 
-  constructor(private clipboard: Clipboard) {
+  constructor(
+    private clipboard: Clipboard,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
     this.loadSnippets();
   }
 
@@ -101,10 +107,15 @@ export class SnippetsPage {
   }
 
   saveSnippets() {
+    if (!this.isBrowser) return;
     localStorage.setItem('snippets', JSON.stringify(this.snippets));
   }
 
   loadSnippets() {
+    if (!this.isBrowser) {
+      this.snippets = [];
+      return;
+    }
     const data = localStorage.getItem('snippets');
     this.snippets = data ? JSON.parse(data) : [];
   }

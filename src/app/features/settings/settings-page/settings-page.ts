@@ -111,11 +111,16 @@ export class SettingsPage {
   author = 'Maksim Kanev';
   repoUrl = 'https://github.com/maksimKV/dev-dashboard';
 
+  // Accessibility state
+  highContrast = false;
+  keyboardShortcuts = true;
+
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
       this.loadProductivityPrefs();
       this.loadUiPrefs();
+      this.loadAccessibilityPrefs();
     }
   }
 
@@ -152,5 +157,18 @@ export class SettingsPage {
     localStorage.setItem('compact-mode', String(this.compactMode));
     localStorage.setItem('font-size', this.fontSize);
     alert('UI preferences saved!');
+  }
+
+  loadAccessibilityPrefs() {
+    if (!this.isBrowser) return;
+    this.highContrast = localStorage.getItem('high-contrast') === 'true';
+    this.keyboardShortcuts = localStorage.getItem('keyboard-shortcuts') !== 'false';
+  }
+
+  saveAccessibilityPrefs() {
+    if (!this.isBrowser) return;
+    localStorage.setItem('high-contrast', String(this.highContrast));
+    localStorage.setItem('keyboard-shortcuts', String(this.keyboardShortcuts));
+    alert('Accessibility preferences saved!');
   }
 }

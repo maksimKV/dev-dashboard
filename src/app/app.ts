@@ -1,4 +1,4 @@
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, OnInit, DoCheck } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
@@ -20,7 +20,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App {
+export class App implements OnInit, DoCheck {
   protected title = 'dev-dashboard';
   enabledFeatures = {
     dashboard: true,
@@ -32,11 +32,26 @@ export class App {
     settings: true
   };
   isBrowser: boolean;
+  highContrast = false;
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
       this.loadEnabledFeatures();
+      this.loadHighContrast();
+    }
+  }
+
+  ngOnInit() {
+    if (this.isBrowser) {
+      this.applyHighContrastClass();
+    }
+  }
+
+  ngDoCheck() {
+    if (this.isBrowser) {
+      this.loadHighContrast();
+      this.applyHighContrastClass();
     }
   }
 
@@ -46,6 +61,20 @@ export class App {
     if (features) {
       const parsed = JSON.parse(features);
       this.enabledFeatures = { ...this.enabledFeatures, ...parsed };
+    }
+  }
+
+  loadHighContrast() {
+    if (!this.isBrowser) return;
+    this.highContrast = localStorage.getItem('high-contrast') === 'true';
+  }
+
+  applyHighContrastClass() {
+    if (!this.isBrowser) return;
+    if (this.highContrast) {
+      document.body.classList.add('high-contrast');
+    } else {
+      document.body.classList.remove('high-contrast');
     }
   }
 }

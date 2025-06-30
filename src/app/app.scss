@@ -1,0 +1,40 @@
+.high-contrast {
+  background: #000 !important;
+  color: #fff !important;
+}
+.high-contrast .mat-card,
+.high-contrast .mat-sidenav,
+.high-contrast .mat-sidenav-content,
+.high-contrast .mat-list-item,
+.high-contrast .mat-toolbar,
+.high-contrast .mat-form-field,
+.high-contrast .mat-slide-toggle,
+.high-contrast .mat-raised-button {
+  background: #111 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+.high-contrast a, .high-contrast a:visited {
+  color: #ff0 !important;
+  text-decoration: underline;
+}
+.high-contrast .mat-raised-button.mat-primary {
+  background: #fff !important;
+  color: #000 !important;
+}
+.high-contrast .mat-slide-toggle-thumb {
+  background: #fff !important;
+}
+.high-contrast .mat-slide-toggle-bar {
+  background: #444 !important;
+}
+.high-contrast .mat-form-field-underline {
+  background: #fff !important;
+}
+.high-contrast .mat-form-field-label {
+  color: #ff0 !important;
+}
+.high-contrast *:focus {
+  outline: 3px solid #ff0 !important;
+  outline-offset: 2px;
+}

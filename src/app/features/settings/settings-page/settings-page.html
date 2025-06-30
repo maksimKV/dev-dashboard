@@ -62,6 +62,16 @@
 </mat-card>
 
 <mat-card class="settings-section">
+  <h2>Accessibility</h2>
+  <form (ngSubmit)="saveAccessibilityPrefs()" #accessForm="ngForm">
+    <mat-slide-toggle [(ngModel)]="highContrast" name="highContrast" style="margin-right: 2rem;">High Contrast Mode</mat-slide-toggle>
+    <mat-slide-toggle [(ngModel)]="keyboardShortcuts" name="keyboardShortcuts">Enable Keyboard Shortcuts</mat-slide-toggle>
+    <button mat-raised-button color="primary" type="submit" style="margin-top: 1rem;">Save Accessibility</button>
+  </form>
+  <p class="settings-hint">High contrast mode improves visibility. Keyboard shortcuts help power users navigate and control the app.</p>
+</mat-card>
+
+<mat-card class="settings-section">
   <h2>About</h2>
   <div class="about-info">
     <div><strong>App Version:</strong> {{ appVersion }}</div>
