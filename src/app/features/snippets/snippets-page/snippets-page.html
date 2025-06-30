@@ -1,1 +1,77 @@
-<p>snippets-page works!</p>
+<div class="snippets-container">
+  <form class="snippet-form" (ngSubmit)="addOrUpdateSnippet()">
+    <mat-form-field appearance="outline">
+      <mat-label>Title</mat-label>
+      <input matInput [(ngModel)]="newSnippet.title" name="title" required />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Language</mat-label>
+      <mat-select [(ngModel)]="newSnippet.language" name="language" required>
+        <mat-option *ngFor="let lang of languages" [value]="lang">{{ lang }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="code-field">
+      <mat-label>Code</mat-label>
+      <textarea matInput rows="6" [(ngModel)]="newSnippet.code" name="code" required></textarea>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Tags</mat-label>
+      <input matInput #tagInput (keydown.enter)="$event.preventDefault(); addTag(tagInput)" placeholder="Add tag and press Enter" />
+    </mat-form-field>
+    <mat-chip-listbox *ngIf="newSnippet.tags?.length" multiple>
+      <mat-chip-option *ngFor="let tag of newSnippet.tags" [selected]="true" (removed)="removeTag(tag)">
+        {{ tag }}
+        <mat-icon matChipRemove>cancel</mat-icon>
+      </mat-chip-option>
+    </mat-chip-listbox>
+    <div class="form-actions">
+      <button mat-raised-button color="primary" type="submit">{{ editingId ? 'Update' : 'Add' }} Snippet</button>
+      <button mat-button type="button" (click)="cancelEdit()" *ngIf="editingId">Cancel</button>
+    </div>
+  </form>
+
+  <div class="snippet-search-filter">
+    <mat-form-field appearance="outline">
+      <mat-label>Search</mat-label>
+      <input matInput [(ngModel)]="search" name="search" placeholder="Search snippets..." />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Language</mat-label>
+      <mat-select [(ngModel)]="filterLang" name="filterLang">
+        <mat-option value="">All</mat-option>
+        <mat-option *ngFor="let lang of languages" [value]="lang">{{ lang }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="snippets-list">
+    <div *ngFor="let snippet of filteredSnippets" class="snippet-card">
+      <div class="snippet-header">
+        <div class="snippet-title">{{ snippet.title }}</div>
+        <div class="snippet-meta">
+          <span class="snippet-lang">{{ snippet.language }}</span>
+          <span class="snippet-tags">
+            <mat-chip-listbox *ngIf="snippet.tags?.length" multiple>
+              <mat-chip-option *ngFor="let tag of snippet.tags" [selected]="true">
+                {{ tag }}
+              </mat-chip-option>
+            </mat-chip-listbox>
+          </span>
+        </div>
+      </div>
+      <pre><code [highlight]="snippet.code" [language]="snippet.language"></code></pre>
+      <div class="snippet-actions">
+        <button mat-icon-button color="primary" (click)="copySnippet(snippet.code)" matTooltip="Copy">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" (click)="editSnippet(snippet)" matTooltip="Edit">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="deleteSnippet(snippet.id)" matTooltip="Delete">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
+    <div *ngIf="!filteredSnippets.length" class="no-snippets">No snippets found.</div>
+  </div>
+</div>

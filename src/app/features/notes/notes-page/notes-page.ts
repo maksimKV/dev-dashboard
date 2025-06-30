@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MarkdownModule } from 'ngx-markdown';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-notes-page',
@@ -22,16 +22,22 @@ import { CommonModule } from '@angular/common';
 })
 export class NotesPage {
   markdown = '';
+  isBrowser: boolean;
 
-  constructor() {
-    this.loadNote();
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      this.loadNote();
+    }
   }
 
   saveNote() {
+    if (!this.isBrowser) return;
     localStorage.setItem('markdown-note', this.markdown);
   }
 
   loadNote() {
+    if (!this.isBrowser) return;
     this.markdown = localStorage.getItem('markdown-note') || '';
   }
 

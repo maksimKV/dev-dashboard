@@ -1,10 +1,10 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-focus-timer',
@@ -30,9 +30,13 @@ export class FocusTimer implements OnDestroy {
 
   completedFocusSessions = 0;
   totalWorkSeconds = 0;
+  isBrowser: boolean;
 
-  constructor() {
-    this.loadState();
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+    if (this.isBrowser) {
+      this.loadState();
+    }
   }
 
   get minutes() {
@@ -90,6 +94,7 @@ export class FocusTimer implements OnDestroy {
   }
 
   saveState() {
+    if (!this.isBrowser) return;
     localStorage.setItem('focus-timer', JSON.stringify({
       workDuration: this.workDuration,
       breakDuration: this.breakDuration,
@@ -102,6 +107,7 @@ export class FocusTimer implements OnDestroy {
   }
 
   loadState() {
+    if (!this.isBrowser) return;
     const data = localStorage.getItem('focus-timer');
     if (data) {
       const s = JSON.parse(data);
