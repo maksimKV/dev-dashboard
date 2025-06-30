@@ -1,1 +1,13 @@
-<p>notes-page works!</p>
+<div class="markdown-editor">
+  <mat-form-field appearance="outline" class="editor-field">
+    <textarea matInput rows="10" placeholder="Write your note in Markdown..." [(ngModel)]="markdown" (ngModelChange)="saveNote()"></textarea>
+  </mat-form-field>
+  <div class="editor-actions">
+    <button mat-raised-button color="primary" (click)="saveNote()">Save</button>
+    <button mat-raised-button color="warn" (click)="clearNote()">Clear</button>
+  </div>
+  <h3>Preview</h3>
+  <div class="preview">
+    <markdown [data]="markdown"></markdown>
+  </div>
+</div>

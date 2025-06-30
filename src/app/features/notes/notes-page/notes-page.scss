@@ -1,0 +1,32 @@
+.markdown-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.editor-field {
+  width: 100%;
+}
+
+.editor-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.preview {
+  background: #fafafa;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 1.5rem;
+  min-height: 120px;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 700px) {
+  .markdown-editor {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+}
