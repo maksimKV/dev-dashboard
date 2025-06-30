@@ -26,5 +26,21 @@
         ]
       }
     }
+  ],
+  "dataGroups": [
+    {
+      "name": "offline-fallback",
+      "urls": ["/"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 1,
+        "maxAge": "1d",
+        "timeout": "10s"
+      }
+    }
+  ],
+  "navigationUrls": [
+    { "positive": true, "regex": "/.*" },
+    { "positive": false, "regex": "/api/.*" }
   ]
 }
