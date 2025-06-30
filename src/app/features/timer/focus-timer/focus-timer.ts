@@ -1,4 +1,4 @@
-import { Component, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnDestroy, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -32,7 +32,7 @@ export class FocusTimer implements OnDestroy {
   totalWorkSeconds = 0;
   isBrowser: boolean;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object, private cdr: ChangeDetectorRef) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
       this.loadState();
@@ -68,6 +68,7 @@ export class FocusTimer implements OnDestroy {
         this.start(); // auto-start next interval
       }
       this.saveState();
+      this.cdr.markForCheck(); // Ensure UI updates
     }, 1000);
   }
 
