@@ -1,0 +1,77 @@
+<div class="stats-dashboard">
+  <h1>Stats Dashboard</h1>
+  <div class="stats-cards">
+    <mat-card class="stat-card">
+      <mat-icon>assignment</mat-icon>
+      <div>
+        <h2>{{ totalTasks }}</h2>
+        <p>Total Tasks</p>
+      </div>
+    </mat-card>
+    <mat-card class="stat-card">
+      <mat-icon>check_circle</mat-icon>
+      <div>
+        <h2>{{ done }}</h2>
+        <p>Tasks Done</p>
+      </div>
+    </mat-card>
+    <mat-card class="stat-card">
+      <mat-icon>timer</mat-icon>
+      <div>
+        <h2>{{ focusSessions }}</h2>
+        <p>Focus Sessions</p>
+      </div>
+    </mat-card>
+    <mat-card class="stat-card">
+      <mat-icon>schedule</mat-icon>
+      <div>
+        <h2>{{ totalFocusMinutes }}</h2>
+        <p>Minutes Focused</p>
+      </div>
+    </mat-card>
+    <mat-card class="stat-card">
+      <mat-icon>notes</mat-icon>
+      <div>
+        <h2>{{ notesCount }}</h2>
+        <p>Notes</p>
+      </div>
+    </mat-card>
+    <mat-card class="stat-card">
+      <mat-icon>text_fields</mat-icon>
+      <div>
+        <h2>{{ notesWordCount }}</h2>
+        <p>Words in Notes</p>
+      </div>
+    </mat-card>
+    <mat-card class="stat-card">
+      <mat-icon>code</mat-icon>
+      <div>
+        <h2>{{ snippetsCount }}</h2>
+        <p>Snippets</p>
+      </div>
+    </mat-card>
+    <mat-card class="stat-card">
+      <mat-icon>label</mat-icon>
+      <div>
+        <h2>{{ topSnippetLang || 'N/A' }}</h2>
+        <p>Top Snippet Language</p>
+      </div>
+    </mat-card>
+  </div>
+
+  <div class="stats-charts">
+    <mat-card class="chart-card">
+      <h3>Task Status</h3>
+      <ng-container *ngIf="isBrowser">
+        <canvas
+          baseChart
+          [data]="taskChartData"
+          [type]="taskChartType"
+          [legend]="true"
+          [options]="{ responsive: true, plugins: { legend: { position: 'bottom' } } }"
+          height="200"
+        ></canvas>
+      </ng-container>
+    </mat-card>
+  </div>
+</div> 
