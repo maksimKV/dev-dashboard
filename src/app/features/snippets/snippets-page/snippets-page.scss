@@ -30,6 +30,14 @@
   align-items: center;
 }
 
+.form-actions-block {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
 .snippet-search-filter {
   display: flex;
   gap: 1rem;
@@ -58,6 +66,7 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
+  position: relative;
 }
 
 .snippet-title {
@@ -68,9 +77,9 @@
 
 .snippet-meta {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.25rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .snippet-lang {
@@ -96,9 +105,9 @@ pre {
 .snippet-actions {
   display: flex;
   gap: 0.5rem;
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
+  position: static;
+  margin-left: 1rem;
+  align-items: center;
 }
 
 .no-snippets {
@@ -120,6 +129,12 @@ pre {
     position: static;
     margin-top: 1rem;
     justify-content: flex-end;
+  }
+  .form-actions-block {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    margin-top: 0.7rem;
   }
 }
 
@@ -176,4 +191,41 @@ pre {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: none; }
+}
+
+.snippet-form-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.snippet-form-row mat-form-field {
+  flex: 1 1 200px;
+  min-width: 180px;
+}
+
+@media (max-width: 700px) {
+  .snippet-form-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+.snippet-lang-chip {
+  background: #e3e8f0;
+  color: #1976d2;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.2rem;
+  margin-right: 0.7rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 1rem;
+  border-radius: 16px;
+  border: 1.5px solid #b6c6e3;
+  box-shadow: 0 1px 4px rgba(25,118,210,0.07);
+  letter-spacing: 0.03em;
+  transition: background 0.2s, color 0.2s;
 }
