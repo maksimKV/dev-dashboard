@@ -1,81 +1,87 @@
-<mat-card class="settings-section">
-  <h2>Data Management</h2>
-  <div class="settings-actions">
-    <button mat-raised-button color="primary" (click)="exportData()">Export Data</button>
-    <label mat-raised-button color="accent" style="margin-left: 1rem;">
-      Import Data
-      <input type="file" accept="application/json" (change)="importData($event)" style="display:none;" />
-    </label>
-    <button mat-raised-button color="warn" style="margin-left: 1rem;" (click)="clearAllData()">Clear All Data</button>
+<div class="feature-card">
+  <div class="feature-card-header">
+    <mat-icon fontIcon="settings"></mat-icon>
+    <h1>Settings</h1>
   </div>
-  <p class="settings-hint">Export or import your tasks, notes, snippets, and timer data as a JSON backup. Clearing data cannot be undone.</p>
-</mat-card>
-
-<mat-card class="settings-section">
-  <h2>Productivity Preferences</h2>
-  <form (ngSubmit)="saveProductivityPrefs()" #prefsForm="ngForm">
-    <mat-form-field appearance="fill" style="min-width: 220px; margin-right: 2rem;">
-      <mat-label>Default Landing Page</mat-label>
-      <mat-select [(ngModel)]="defaultLandingPage" name="defaultLandingPage">
-        <mat-option *ngFor="let page of landingPages" [value]="page.value">{{ page.label }}</mat-option>
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field appearance="fill" style="width: 120px; margin-right: 1rem;">
-      <mat-label>Focus (min)</mat-label>
-      <input matInput type="number" min="1" [(ngModel)]="focusDuration" name="focusDuration">
-    </mat-form-field>
-    <mat-form-field appearance="fill" style="width: 120px; margin-right: 2rem;">
-      <mat-label>Break (min)</mat-label>
-      <input matInput type="number" min="1" [(ngModel)]="breakDuration" name="breakDuration">
-    </mat-form-field>
-    <div class="feature-toggles">
-      <mat-slide-toggle [(ngModel)]="features.tasks" name="featureTasks">Tasks</mat-slide-toggle>
-      <mat-slide-toggle [(ngModel)]="features.notes" name="featureNotes">Notes</mat-slide-toggle>
-      <mat-slide-toggle [(ngModel)]="features.timer" name="featureTimer">Focus Timer</mat-slide-toggle>
-      <mat-slide-toggle [(ngModel)]="features.snippets" name="featureSnippets">Snippets</mat-slide-toggle>
-      <mat-slide-toggle [(ngModel)]="features.stats" name="featureStats">Stats</mat-slide-toggle>
+  <mat-card class="settings-section">
+    <h2>Data Management</h2>
+    <div class="settings-actions">
+      <button mat-raised-button color="primary" (click)="exportData()">Export Data</button>
+      <label mat-raised-button color="accent" style="margin-left: 1rem;">
+        Import Data
+        <input type="file" accept="application/json" (change)="importData($event)" style="display:none;" />
+      </label>
+      <button mat-raised-button color="warn" style="margin-left: 1rem;" (click)="clearAllData()">Clear All Data</button>
     </div>
-    <button mat-raised-button color="primary" type="submit" style="margin-top: 1rem;">Save Preferences</button>
-  </form>
-  <p class="settings-hint">Choose your default landing page, set timer defaults, and toggle feature visibility.</p>
-</mat-card>
+    <p class="settings-hint">Export or import your tasks, notes, snippets, and timer data as a JSON backup. Clearing data cannot be undone.</p>
+  </mat-card>
 
-<mat-card class="settings-section">
-  <h2>UI Preferences</h2>
-  <form (ngSubmit)="saveUiPrefs()" #uiForm="ngForm">
-    <mat-form-field appearance="fill" style="min-width: 180px; margin-right: 2rem;">
-      <mat-label>Sidebar Position</mat-label>
-      <mat-select [(ngModel)]="sidebarPosition" name="sidebarPosition">
-        <mat-option *ngFor="let pos of sidebarPositions" [value]="pos.value">{{ pos.label }}</mat-option>
-      </mat-select>
-    </mat-form-field>
-    <mat-slide-toggle [(ngModel)]="compactMode" name="compactMode" style="margin-right: 2rem;">Compact Mode</mat-slide-toggle>
-    <mat-form-field appearance="fill" style="min-width: 140px;">
-      <mat-label>Font Size</mat-label>
-      <mat-select [(ngModel)]="fontSize" name="fontSize">
-        <mat-option *ngFor="let size of fontSizes" [value]="size.value">{{ size.label }}</mat-option>
-      </mat-select>
-    </mat-form-field>
-    <button mat-raised-button color="primary" type="submit" style="margin-top: 1rem;">Save UI Preferences</button>
-  </form>
-  <p class="settings-hint">Customize sidebar position, enable compact mode, and adjust font size for your dashboard.</p>
-</mat-card>
+  <mat-card class="settings-section">
+    <h2>Productivity Preferences</h2>
+    <form (ngSubmit)="saveProductivityPrefs()" #prefsForm="ngForm">
+      <mat-form-field appearance="fill" style="min-width: 220px; margin-right: 2rem;">
+        <mat-label>Default Landing Page</mat-label>
+        <mat-select [(ngModel)]="defaultLandingPage" name="defaultLandingPage">
+          <mat-option *ngFor="let page of landingPages" [value]="page.value">{{ page.label }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="fill" style="width: 120px; margin-right: 1rem;">
+        <mat-label>Focus (min)</mat-label>
+        <input matInput type="number" min="1" [(ngModel)]="focusDuration" name="focusDuration">
+      </mat-form-field>
+      <mat-form-field appearance="fill" style="width: 120px; margin-right: 2rem;">
+        <mat-label>Break (min)</mat-label>
+        <input matInput type="number" min="1" [(ngModel)]="breakDuration" name="breakDuration">
+      </mat-form-field>
+      <div class="feature-toggles">
+        <mat-slide-toggle [(ngModel)]="features.tasks" name="featureTasks">Tasks</mat-slide-toggle>
+        <mat-slide-toggle [(ngModel)]="features.notes" name="featureNotes">Notes</mat-slide-toggle>
+        <mat-slide-toggle [(ngModel)]="features.timer" name="featureTimer">Focus Timer</mat-slide-toggle>
+        <mat-slide-toggle [(ngModel)]="features.snippets" name="featureSnippets">Snippets</mat-slide-toggle>
+        <mat-slide-toggle [(ngModel)]="features.stats" name="featureStats">Stats</mat-slide-toggle>
+      </div>
+      <button mat-raised-button color="primary" type="submit" style="margin-top: 1rem;">Save Preferences</button>
+    </form>
+    <p class="settings-hint">Choose your default landing page, set timer defaults, and toggle feature visibility.</p>
+  </mat-card>
 
-<mat-card class="settings-section">
-  <h2>Accessibility</h2>
-  <form (ngSubmit)="saveAccessibilityPrefs()" #accessForm="ngForm">
-    <mat-slide-toggle [(ngModel)]="highContrast" name="highContrast" style="margin-right: 2rem;">High Contrast Mode</mat-slide-toggle>
-    <mat-slide-toggle [(ngModel)]="keyboardShortcuts" name="keyboardShortcuts">Enable Keyboard Shortcuts</mat-slide-toggle>
-    <button mat-raised-button color="primary" type="submit" style="margin-top: 1rem;">Save Accessibility</button>
-  </form>
-  <p class="settings-hint">High contrast mode improves visibility. Keyboard shortcuts help power users navigate and control the app.</p>
-</mat-card>
+  <mat-card class="settings-section">
+    <h2>UI Preferences</h2>
+    <form (ngSubmit)="saveUiPrefs()" #uiForm="ngForm">
+      <mat-form-field appearance="fill" style="min-width: 180px; margin-right: 2rem;">
+        <mat-label>Sidebar Position</mat-label>
+        <mat-select [(ngModel)]="sidebarPosition" name="sidebarPosition">
+          <mat-option *ngFor="let pos of sidebarPositions" [value]="pos.value">{{ pos.label }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-slide-toggle [(ngModel)]="compactMode" name="compactMode" style="margin-right: 2rem;">Compact Mode</mat-slide-toggle>
+      <mat-form-field appearance="fill" style="min-width: 140px;">
+        <mat-label>Font Size</mat-label>
+        <mat-select [(ngModel)]="fontSize" name="fontSize">
+          <mat-option *ngFor="let size of fontSizes" [value]="size.value">{{ size.label }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <button mat-raised-button color="primary" type="submit" style="margin-top: 1rem;">Save UI Preferences</button>
+    </form>
+    <p class="settings-hint">Customize sidebar position, enable compact mode, and adjust font size for your dashboard.</p>
+  </mat-card>
 
-<mat-card class="settings-section">
-  <h2>About</h2>
-  <div class="about-info">
-    <div><strong>App Version:</strong> {{ appVersion }}</div>
-    <div><strong>Author:</strong> {{ author }}</div>
-    <div><strong>GitHub:</strong> <a href="{{ repoUrl }}" target="_blank" rel="noopener">{{ repoUrl }}</a></div>
-  </div>
-</mat-card>
+  <mat-card class="settings-section">
+    <h2>Accessibility</h2>
+    <form (ngSubmit)="saveAccessibilityPrefs()" #accessForm="ngForm">
+      <mat-slide-toggle [(ngModel)]="highContrast" name="highContrast" style="margin-right: 2rem;">High Contrast Mode</mat-slide-toggle>
+      <mat-slide-toggle [(ngModel)]="keyboardShortcuts" name="keyboardShortcuts">Enable Keyboard Shortcuts</mat-slide-toggle>
+      <button mat-raised-button color="primary" type="submit" style="margin-top: 1rem;">Save Accessibility</button>
+    </form>
+    <p class="settings-hint">High contrast mode improves visibility. Keyboard shortcuts help power users navigate and control the app.</p>
+  </mat-card>
+
+  <mat-card class="settings-section">
+    <h2>About</h2>
+    <div class="about-info">
+      <div><strong>App Version:</strong> {{ appVersion }}</div>
+      <div><strong>Author:</strong> {{ author }}</div>
+      <div><strong>GitHub:</strong> <a href="{{ repoUrl }}" target="_blank" rel="noopener">{{ repoUrl }}</a></div>
+    </div>
+  </mat-card>
+</div>

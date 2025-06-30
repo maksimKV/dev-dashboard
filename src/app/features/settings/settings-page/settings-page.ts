@@ -8,11 +8,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-settings-page',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatSelectModule, MatInputModule, MatSlideToggleModule, FormsModule],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatSelectModule, MatInputModule, MatSlideToggleModule, FormsModule, MatIconModule],
   templateUrl: './settings-page.html',
   styleUrl: './settings-page.scss'
 })

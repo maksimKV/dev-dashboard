@@ -5,6 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-notes-page',
@@ -15,7 +16,8 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
     MarkdownModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule
+    MatButtonModule,
+    MatIconModule
   ],
   templateUrl: './notes-page.html',
   styleUrl: './notes-page.scss'
