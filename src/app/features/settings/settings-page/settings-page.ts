@@ -142,6 +142,7 @@ export class SettingsPage {
     localStorage.setItem('focus-timer-duration', String(this.focusDuration));
     localStorage.setItem('focus-break-duration', String(this.breakDuration));
     localStorage.setItem('enabled-features', JSON.stringify(this.features));
+    window.dispatchEvent(new StorageEvent('storage', { key: 'enabled-features' }));
     alert('Productivity preferences saved!');
   }
 
@@ -157,6 +158,7 @@ export class SettingsPage {
     localStorage.setItem('sidebar-position', this.sidebarPosition);
     localStorage.setItem('compact-mode', String(this.compactMode));
     localStorage.setItem('font-size', this.fontSize);
+    window.dispatchEvent(new StorageEvent('storage', { key: 'sidebar-position' }));
     alert('UI preferences saved!');
   }
 

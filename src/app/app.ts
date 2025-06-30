@@ -40,6 +40,7 @@ export class App implements OnInit, DoCheck {
   sidenavMode: 'side' | 'over' = 'side';
   sidenavOpened = true;
   isMobile = false;
+  sidebarPosition: 'left' | 'right' = 'left';
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -49,7 +50,9 @@ export class App implements OnInit, DoCheck {
     if (this.isBrowser) {
       this.loadEnabledFeatures();
       this.loadHighContrast();
+      this.loadSidebarPosition();
       this.setupResponsiveSidenav();
+      window.addEventListener('storage', this.handleStorageChange.bind(this));
     }
   }
 
@@ -104,5 +107,19 @@ export class App implements OnInit, DoCheck {
     } else {
       document.body.classList.remove('high-contrast');
     }
+  }
+
+  handleStorageChange(event: StorageEvent) {
+    if (event.key === 'enabled-features') {
+      this.loadEnabledFeatures();
+    }
+    if (event.key === 'sidebar-position') {
+      this.loadSidebarPosition();
+    }
+  }
+
+  loadSidebarPosition() {
+    if (!this.isBrowser) return;
+    this.sidebarPosition = (localStorage.getItem('sidebar-position') as 'left' | 'right') || 'left';
   }
 }

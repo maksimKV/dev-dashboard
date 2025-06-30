@@ -84,3 +84,14 @@
     gap: 0.5rem !important;
   }
 }
+
+.sidenav-right mat-sidenav {
+  left: auto !important;
+  right: 0 !important;
+  border-right: none !important;
+  border-left: 1px solid #e0e0e0 !important;
+}
+.sidenav-right mat-sidenav-content {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
