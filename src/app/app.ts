@@ -3,8 +3,10 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MarkdownModule } from 'ngx-markdown';
-import { isPlatformBrowser } from '@angular/common';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +17,9 @@ import { CommonModule } from '@angular/common';
     RouterLinkActive,
     MatSidenavModule,
     MatListModule,
-    MarkdownModule
+    MarkdownModule,
+    MatToolbarModule,
+    MatIconModule
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss'
@@ -33,12 +37,19 @@ export class App implements OnInit, DoCheck {
   };
   isBrowser: boolean;
   highContrast = false;
+  sidenavMode: 'side' | 'over' = 'side';
+  sidenavOpened = true;
+  isMobile = false;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private breakpointObserver: BreakpointObserver
+  ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
       this.loadEnabledFeatures();
       this.loadHighContrast();
+      this.setupResponsiveSidenav();
     }
   }
 
@@ -53,6 +64,23 @@ export class App implements OnInit, DoCheck {
       this.loadHighContrast();
       this.applyHighContrastClass();
     }
+  }
+
+  setupResponsiveSidenav() {
+    this.breakpointObserver.observe([Breakpoints.Handset, Breakpoints.Tablet]).subscribe(result => {
+      this.isMobile = result.matches;
+      if (this.isMobile) {
+        this.sidenavMode = 'over';
+        this.sidenavOpened = false;
+      } else {
+        this.sidenavMode = 'side';
+        this.sidenavOpened = true;
+      }
+    });
+  }
+
+  toggleSidenav() {
+    this.sidenavOpened = !this.sidenavOpened;
   }
 
   loadEnabledFeatures() {
