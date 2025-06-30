@@ -9,9 +9,9 @@
 
 .add-task-form {
   display: flex;
+  flex-direction: column;
   gap: 1rem;
-  align-items: flex-end;
-  flex-wrap: wrap;
+  align-items: stretch;
 }
 
 .columns {
