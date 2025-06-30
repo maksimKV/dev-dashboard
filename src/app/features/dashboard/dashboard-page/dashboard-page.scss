@@ -1,0 +1,83 @@
+.dashboard-welcome-card {
+  max-width: 540px;
+  margin: 3rem auto 0 auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.08), 0 1.5px 6px 0 rgba(0,0,0,0.04);
+  padding: 2.5rem 2.5rem 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fadeIn 0.7s cubic-bezier(0.4,0,0.2,1);
+}
+
+.dashboard-welcome-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-icon {
+  font-size: 3rem;
+  color: #1976d2;
+  filter: drop-shadow(0 2px 6px rgba(25,118,210,0.12));
+}
+
+.dashboard-welcome-card h1 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0;
+  color: #222;
+}
+
+.dashboard-subtitle {
+  font-size: 1.15rem;
+  color: #555;
+  margin-bottom: 1.2rem;
+  text-align: center;
+}
+
+.dashboard-feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  width: 100%;
+}
+
+.dashboard-feature-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 1.08rem;
+  margin-bottom: 0.7rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.dashboard-feature-list mat-icon {
+  color: #1976d2;
+  font-size: 1.4rem;
+  vertical-align: middle;
+}
+
+.dashboard-get-started {
+  color: #888;
+  font-size: 1rem;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .dashboard-welcome-card {
+    padding: 1.2rem 0.7rem 1.2rem 0.7rem;
+    max-width: 98vw;
+  }
+  .dashboard-welcome-header h1 {
+    font-size: 1.3rem;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: none; }
+}
