@@ -38,46 +38,64 @@ export class StatsDashboardPage {
   };
   taskChartType: ChartType = 'doughnut';
 
+  loadError: string | null = null;
+
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
   loadStats() {
     if (!this.isBrowser) return;
-    // Kanban tasks
-    const kanban = JSON.parse(localStorage.getItem('kanban-tasks') || '{"todo":[],"inProgress":[],"done":[]}');
-    this.todo = kanban.todo?.length || 0;
-    this.inProgress = kanban.inProgress?.length || 0;
-    this.done = kanban.done?.length || 0;
-    this.totalTasks = this.todo + this.inProgress + this.done;
-    this.taskChartData = {
-      labels: ['To Do', 'In Progress', 'Done'],
-      datasets: [
-        { data: [this.todo, this.inProgress, this.done], label: 'Tasks' }
-      ]
-    };
+    try {
+      // Kanban tasks
+      const kanban = JSON.parse(localStorage.getItem('kanban-tasks') || '{"todo":[],"inProgress":[],"done":[]}');
+      this.todo = kanban.todo?.length || 0;
+      this.inProgress = kanban.inProgress?.length || 0;
+      this.done = kanban.done?.length || 0;
+      this.totalTasks = this.todo + this.inProgress + this.done;
+      this.taskChartData = {
+        labels: ['To Do', 'In Progress', 'Done'],
+        datasets: [
+          { data: [this.todo, this.inProgress, this.done], label: 'Tasks' }
+        ]
+      };
 
-    // Focus timer
-    const timer = JSON.parse(localStorage.getItem('focus-timer') || '{}');
-    this.focusSessions = timer.completedFocusSessions || 0;
-    this.totalFocusMinutes = Math.floor((timer.totalWorkSeconds || 0) / 60);
+      // Focus timer
+      const timer = JSON.parse(localStorage.getItem('focus-timer') || '{}');
+      this.focusSessions = timer.completedFocusSessions || 0;
+      this.totalFocusMinutes = Math.floor((timer.totalWorkSeconds || 0) / 60);
 
-    // Notes
-    const note = localStorage.getItem('markdown-note') || '';
-    this.notesCount = note.trim() ? 1 : 0;
-    this.notesWordCount = note.trim() ? note.trim().split(/\s+/).length : 0;
+      // Notes
+      const note = localStorage.getItem('markdown-note') || '';
+      this.notesCount = note.trim() ? 1 : 0;
+      this.notesWordCount = note.trim() ? note.trim().split(/\s+/).length : 0;
 
-    // Snippets
-    const snippets = JSON.parse(localStorage.getItem('snippets') || '[]');
-    this.snippetsCount = snippets.length;
-    if (snippets.length) {
-      const langCount: Record<string, number> = {};
-      for (const s of snippets) {
-        langCount[s.language] = (langCount[s.language] || 0) + 1;
+      // Snippets
+      const snippets = JSON.parse(localStorage.getItem('snippets') || '[]');
+      this.snippetsCount = snippets.length;
+      if (snippets.length) {
+        const langCount: Record<string, number> = {};
+        for (const s of snippets) {
+          langCount[s.language] = (langCount[s.language] || 0) + 1;
+        }
+        this.topSnippetLang = Object.entries(langCount).sort((a, b) => b[1] - a[1])[0][0];
+      } else {
+        this.topSnippetLang = '';
       }
-      this.topSnippetLang = Object.entries(langCount).sort((a, b) => b[1] - a[1])[0][0];
-    } else {
+      this.loadError = null;
+    } catch (e) {
+      this.todo = 0;
+      this.inProgress = 0;
+      this.done = 0;
+      this.totalTasks = 0;
+      this.taskChartData = { labels: [], datasets: [] };
+      this.focusSessions = 0;
+      this.totalFocusMinutes = 0;
+      this.notesCount = 0;
+      this.notesWordCount = 0;
+      this.snippetsCount = 0;
       this.topSnippetLang = '';
+      this.loadError = 'Failed to load stats. Data may be corrupted.';
     }
   }
 } 

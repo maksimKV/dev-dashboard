@@ -7,7 +7,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule, MatChipListbox, MatChipOption } from '@angular/material/chips';
 import { MatSelectModule } from '@angular/material/select';
-import { HighlightModule } from 'ngx-highlightjs';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { Snippet } from '../../../shared/models/snippet.model';
 import { isPlatformBrowser } from '@angular/common';
@@ -25,8 +24,7 @@ import { isPlatformBrowser } from '@angular/common';
     MatChipsModule,
     MatChipListbox,
     MatChipOption,
-    MatSelectModule,
-    HighlightModule
+    MatSelectModule
   ],
   templateUrl: './snippets-page.html',
   styleUrl: './snippets-page.scss'
@@ -41,6 +39,7 @@ export class SnippetsPage {
     'typescript', 'javascript', 'python', 'html', 'css', 'json', 'bash', 'c', 'cpp', 'java', 'go', 'php', 'ruby', 'sql', 'yaml', 'markdown'
   ];
   isBrowser: boolean;
+  loadError: string | null = null;
 
   constructor(
     private clipboard: Clipboard,
@@ -117,7 +116,18 @@ export class SnippetsPage {
       return;
     }
     const data = localStorage.getItem('snippets');
-    this.snippets = data ? JSON.parse(data) : [];
+    if (data) {
+      try {
+        this.snippets = JSON.parse(data);
+        this.loadError = null;
+      } catch (e) {
+        this.snippets = [];
+        this.loadError = 'Failed to load snippets. Data may be corrupted.';
+      }
+    } else {
+      this.snippets = [];
+      this.loadError = null;
+    }
   }
 
   cancelEdit() {

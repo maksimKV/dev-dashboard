@@ -1,4 +1,7 @@
 <div class="kanban-board">
+  <div *ngIf="loadError" class="kanban-error">
+    <mat-icon color="warn">error</mat-icon> {{ loadError }}
+  </div>
   <form class="add-task-form" (ngSubmit)="addTask()">
     <mat-form-field appearance="outline">
       <input matInput placeholder="Task title" [(ngModel)]="newTaskTitle" name="title" required />

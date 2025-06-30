@@ -1,4 +1,4 @@
-import { Component, Inject, PLATFORM_ID, OnInit, DoCheck, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, OnInit, DoCheck, ChangeDetectorRef, ViewChild, Renderer2, Inject as NgInject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
@@ -7,6 +7,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -42,11 +43,14 @@ export class App implements OnInit, DoCheck {
   isMobile = false;
   sidebarPosition: 'left' | 'right' = 'left';
   @ViewChild('sidenav') sidenav!: MatSidenav;
+  private breakpointSub?: Subscription;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private breakpointObserver: BreakpointObserver,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private renderer: Renderer2,
+    @NgInject('DOCUMENT') private document: Document
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
@@ -72,7 +76,7 @@ export class App implements OnInit, DoCheck {
   }
 
   setupResponsiveSidenav() {
-    this.breakpointObserver.observe([Breakpoints.Handset]).subscribe(result => {
+    this.breakpointSub = this.breakpointObserver.observe([Breakpoints.Handset]).subscribe(result => {
       if (result.matches) {
         this.isMobile = true;
         this.sidenavMode = 'over';
@@ -108,10 +112,11 @@ export class App implements OnInit, DoCheck {
 
   applyHighContrastClass() {
     if (!this.isBrowser) return;
+    const body = this.document.body;
     if (this.highContrast) {
-      document.body.classList.add('high-contrast');
+      this.renderer.addClass(body, 'high-contrast');
     } else {
-      document.body.classList.remove('high-contrast');
+      this.renderer.removeClass(body, 'high-contrast');
     }
   }
 
@@ -127,5 +132,9 @@ export class App implements OnInit, DoCheck {
   loadSidebarPosition() {
     if (!this.isBrowser) return;
     this.sidebarPosition = (localStorage.getItem('sidebar-position') as 'left' | 'right') || 'left';
+  }
+
+  ngOnDestroy() {
+    this.breakpointSub?.unsubscribe();
   }
 }

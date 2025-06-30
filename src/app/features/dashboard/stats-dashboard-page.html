@@ -4,6 +4,9 @@
     <h1>Stats Dashboard</h1>
   </div>
   <div class="stats-dashboard">
+    <div *ngIf="loadError" class="stats-error">
+      <mat-icon color="warn">error</mat-icon> {{ loadError }}
+    </div>
     <div class="stats-cards">
       <mat-card class="stat-card">
         <mat-icon>assignment</mat-icon>

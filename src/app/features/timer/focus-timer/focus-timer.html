@@ -1,4 +1,7 @@
 <div class="focus-timer">
+  <div *ngIf="loadError" class="timer-error">
+    <mat-icon color="warn">error</mat-icon> {{ loadError }}
+  </div>
   <form class="settings" (ngSubmit)="updateDurations()">
     <mat-form-field appearance="outline">
       <mat-label>Work (min)</mat-label>
