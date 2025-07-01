@@ -12,8 +12,8 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     // provideClientHydration(), // Removed for NG0908 isolation
-    ...MARKDOWN_PROVIDERS,
-    provideCharts(withDefaultRegisterables()),
-    provideHttpClient(withInterceptorsFromDi(), withFetch())
+    // ...MARKDOWN_PROVIDERS, // Commented out for NG0908 isolation
+    // provideCharts(withDefaultRegisterables()), // Commented out for NG0908 isolation
+    // provideHttpClient(withInterceptorsFromDi(), withFetch()) // Commented out for NG0908 isolation
   ]
 };
