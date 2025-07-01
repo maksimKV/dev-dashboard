@@ -4,3 +4,33 @@ html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 @import 'highlight.js/styles/github.css';
+
+.font-size-small {
+  font-size: 13px !important;
+}
+.font-size-medium {
+  font-size: 16px !important;
+}
+.font-size-large {
+  font-size: 19px !important;
+}
+
+.compact-mode .feature-card,
+.compact-mode .settings-section,
+.compact-mode .snippets-container,
+.compact-mode .kanban-board,
+.compact-mode .notes-container,
+.compact-mode .mat-form-field,
+.compact-mode .mat-card {
+  padding: 0.7rem !important;
+  margin-bottom: 0.7rem !important;
+}
+.compact-mode .form-actions-block,
+.compact-mode .ui-prefs-row,
+.compact-mode .accessibility-row {
+  gap: 0.3rem !important;
+}
+.compact-mode .mat-form-field {
+  margin-right: 0.5rem !important;
+  min-width: 80px !important;
+}

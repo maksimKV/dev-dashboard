@@ -47,3 +47,19 @@ bootstrapApplication(App, appConfig)
 window.addEventListener('error', (event) => {
   console.error('Global error:', event.error);
 });
+
+function applyUiPrefs() {
+  if (typeof window === 'undefined') return;
+  const fontSize = localStorage.getItem('font-size') || 'medium';
+  const compactMode = localStorage.getItem('compact-mode') === 'true';
+  document.body.classList.remove('font-size-small', 'font-size-medium', 'font-size-large', 'compact-mode');
+  document.body.classList.add(`font-size-${fontSize}`);
+  if (compactMode) document.body.classList.add('compact-mode');
+}
+
+applyUiPrefs();
+window.addEventListener('storage', (event) => {
+  if (event.key === 'font-size' || event.key === 'compact-mode') {
+    applyUiPrefs();
+  }
+});
