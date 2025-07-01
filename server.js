@@ -88,13 +88,16 @@ const emailConfig = {
 // Create transporter
 const transporter = nodemailer.createTransport(emailConfig);
 
+// Get frontend URL from environment or default
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:4200';
+
 // Email verification functions
 function generateVerificationToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
 function sendVerificationEmail(email, token) {
-  const verificationUrl = `http://localhost:4200/verify-email?token=${token}`;
+  const verificationUrl = `${FRONTEND_URL}/verify-email?token=${token}`;
   
   const mailOptions = {
     from: emailConfig.auth.user,
