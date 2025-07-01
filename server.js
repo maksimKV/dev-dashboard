@@ -472,8 +472,27 @@ const sendVerificationEmail = async (email, token) => {
   // --- USER DATA ROUTES ---
   const userRouter = express.Router();
 
+  // Middleware to ensure user data exists for authenticated user
+  userRouter.use(authenticateToken, async (req, res, next) => {
+    const userId = req.user.userId;
+    let data = userData.get(userId);
+    if (!data) {
+      data = {
+        userId,
+        kanbanTasks: { todo: [], inProgress: [], done: [] },
+        focusTimer: {},
+        markdownNote: '',
+        snippets: [],
+        preferences: {}
+      };
+      userData.set(userId, data);
+      await saveData();
+    }
+    next();
+  });
+
   // Kanban tasks
-  userRouter.get('/data', authenticateToken, (req, res) => {
+  userRouter.get('/data', (req, res) => {
     try {
       const userId = req.user.userId;
       const data = userData.get(userId);
@@ -495,7 +514,7 @@ const sendVerificationEmail = async (email, token) => {
     }
   });
 
-  userRouter.put('/kanban-tasks', authenticateToken, async (req, res) => {
+  userRouter.put('/kanban-tasks', async (req, res) => {
     try {
       const userId = req.user.userId;
       const { kanbanTasks } = req.body;
@@ -521,7 +540,7 @@ const sendVerificationEmail = async (email, token) => {
     }
   });
 
-  userRouter.put('/focus-timer', authenticateToken, async (req, res) => {
+  userRouter.put('/focus-timer', async (req, res) => {
     try {
       const userId = req.user.userId;
       const { focusTimer } = req.body;
@@ -547,7 +566,7 @@ const sendVerificationEmail = async (email, token) => {
     }
   });
 
-  userRouter.put('/markdown-note', authenticateToken, async (req, res) => {
+  userRouter.put('/markdown-note', async (req, res) => {
     try {
       const userId = req.user.userId;
       let { markdownNote } = req.body;
@@ -575,7 +594,7 @@ const sendVerificationEmail = async (email, token) => {
     }
   });
 
-  userRouter.put('/snippets', authenticateToken, async (req, res) => {
+  userRouter.put('/snippets', async (req, res) => {
     try {
       const userId = req.user.userId;
       let { snippets } = req.body;
@@ -608,7 +627,7 @@ const sendVerificationEmail = async (email, token) => {
     }
   });
 
-  userRouter.put('/preferences', authenticateToken, async (req, res) => {
+  userRouter.put('/preferences', async (req, res) => {
     try {
       const userId = req.user.userId;
       let { preferences } = req.body;
