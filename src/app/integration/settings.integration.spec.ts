@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { By } from '@angular/platform-browser';
+import { environment } from 'src/environments/environment';
 
 @Component({
   template: `<app-settings-page></app-settings-page>`,
@@ -47,7 +48,7 @@ describe('Settings Integration', () => {
     settingsPage.saveProductivityPrefs();
     
     // Expect and flush the preferences update request
-    const putReq = httpMock.expectOne(req => req.url === 'http://localhost:4000/api/user/preferences');
+    const putReq = httpMock.expectOne(req => req.url === `${environment.apiUrl}/user/preferences`);
     expect(putReq.request.method).toBe('PUT');
     putReq.flush({});
     tick();

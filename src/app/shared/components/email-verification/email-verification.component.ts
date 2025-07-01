@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
 
 interface VerifyEmailResponse { message: string; }
 
@@ -114,7 +115,7 @@ export class EmailVerificationComponent implements OnInit {
   isLoading = true;
   error = '';
   success = '';
-  private apiUrl = 'http://localhost:4000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private route: ActivatedRoute,

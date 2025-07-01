@@ -6,6 +6,7 @@ import { EmailVerificationComponent } from '../shared/components/email-verificat
 import { FormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { Component } from '@angular/core';
+import { environment } from 'src/environments/environment';
 
 @Component({
   template: `
@@ -44,7 +45,7 @@ describe('Auth Integration', () => {
     authService.register('test@example.com', 'Password123!').subscribe(res => {
       registered = true;
     });
-    const req = httpMock.expectOne(r => r.url.includes('/api/auth/register'));
+    const req = httpMock.expectOne(r => r.url.startsWith(`${environment.apiUrl}/auth/register`));
     expect(req.request.method).toBe('POST');
     req.flush({ message: 'Registered', token: 'token123', user: { id: '1', email: 'test@example.com' } });
     tick();
@@ -55,7 +56,7 @@ describe('Auth Integration', () => {
     authService.resendVerification('test@example.com').subscribe(res => {
       resent = true;
     });
-    const req2 = httpMock.expectOne(r => r.url.includes('/api/auth/resend-verification'));
+    const req2 = httpMock.expectOne(r => r.url.startsWith(`${environment.apiUrl}/auth/resend-verification`));
     expect(req2.request.method).toBe('POST');
     req2.flush({ message: 'Verification sent' });
     tick();
@@ -66,7 +67,7 @@ describe('Auth Integration', () => {
     authService.login('test@example.com', 'Password123!').subscribe(res => {
       loggedIn = true;
     });
-    const req3 = httpMock.expectOne(r => r.url.includes('/api/auth/login'));
+    const req3 = httpMock.expectOne(r => r.url.startsWith(`${environment.apiUrl}/auth/login`));
     expect(req3.request.method).toBe('POST');
     req3.flush({ message: 'Logged in', token: 'jwt-token', user: { id: '1', email: 'test@example.com' } });
     tick();
@@ -83,7 +84,7 @@ describe('Auth Integration', () => {
     });
     // Simulate login
     authService.login('test@example.com', 'Password123!').subscribe();
-    const req = httpMock.expectOne(r => r.url.includes('/api/auth/login'));
+    const req = httpMock.expectOne(r => r.url.startsWith(`${environment.apiUrl}/auth/login`));
     req.flush({ message: 'Logged in', token: 'jwt-token', user: { id: '1', email: 'test@example.com' } });
     tick();
     // Simulate setting auth state after login
