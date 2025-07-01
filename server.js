@@ -37,6 +37,11 @@ let emailVerificationTokens = new Map(); // Store verification tokens
 // Track emails currently being registered to prevent double registration/email
 const emailsBeingRegistered = new Set();
 
+// In-memory login attempts tracker for lockout/throttling
+const loginAttempts = new Map(); // email -> { count, lastAttempt, lockUntil }
+const MAX_ATTEMPTS = 5;
+const LOCK_TIME = 5 * 60 * 1000; // 5 minutes
+
 // Load data from files on startup
 function loadData() {
   try {
@@ -272,15 +277,35 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password required' });
     }
 
+    // Account lockout/throttling logic
+    const attempt = loginAttempts.get(email) || { count: 0, lockUntil: 0 };
+    if (attempt.lockUntil && Date.now() < attempt.lockUntil) {
+      const wait = Math.ceil((attempt.lockUntil - Date.now()) / 1000);
+      return res.status(429).json({ error: `Too many failed attempts. Try again in ${wait} seconds.` });
+    }
+
     const user = users.find(u => u.email === email);
     if (!user) {
+      attempt.count++;
+      if (attempt.count >= MAX_ATTEMPTS) {
+        attempt.lockUntil = Date.now() + LOCK_TIME;
+      }
+      loginAttempts.set(email, attempt);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
     const isValidPassword = await bcrypt.compare(password, user.passwordHash);
     if (!isValidPassword) {
+      attempt.count++;
+      if (attempt.count >= MAX_ATTEMPTS) {
+        attempt.lockUntil = Date.now() + LOCK_TIME;
+      }
+      loginAttempts.set(email, attempt);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    // Reset attempts on successful login
+    loginAttempts.delete(email);
 
     // Check if email is verified
     if (!user.isVerified) {
