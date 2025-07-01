@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
+interface VerifyEmailResponse { message: string; }
+
 @Component({
   selector: 'app-email-verification',
   standalone: true,
@@ -133,8 +135,8 @@ export class EmailVerificationComponent implements OnInit {
       return;
     }
 
-    this.http.get(`${this.apiUrl}/auth/verify-email?token=${token}`).subscribe({
-      next: (response: any) => {
+    this.http.get<VerifyEmailResponse>(`${this.apiUrl}/auth/verify-email?token=${token}`).subscribe({
+      next: (response: VerifyEmailResponse) => {
         this.success = response.message;
         this.isLoading = false;
       },

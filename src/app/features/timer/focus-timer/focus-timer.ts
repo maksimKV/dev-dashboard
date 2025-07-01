@@ -64,7 +64,7 @@ export class FocusTimer implements OnInit, OnDestroy {
         if (this.isWork) this.totalWorkSeconds++;
       } else {
         this.isRunning = false;
-        clearInterval(this.intervalId as any);
+        if (this.intervalId) clearInterval(this.intervalId);
         if (this.isWork) {
           this.completedFocusSessions++;
           this.isWork = false;
@@ -83,13 +83,13 @@ export class FocusTimer implements OnInit, OnDestroy {
 
   pause() {
     this.isRunning = false;
-    clearInterval(this.intervalId as any);
+    if (this.intervalId) clearInterval(this.intervalId);
     this.saveState();
   }
 
   reset() {
     this.isRunning = false;
-    clearInterval(this.intervalId as any);
+    if (this.intervalId) clearInterval(this.intervalId);
     this.timeLeft = this.isWork ? this.workDuration * 60 : this.breakDuration * 60;
     this.saveState();
   }
@@ -177,6 +177,6 @@ export class FocusTimer implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    clearInterval(this.intervalId as any);
+    if (this.intervalId) clearInterval(this.intervalId);
   }
 }

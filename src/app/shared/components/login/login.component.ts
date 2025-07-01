@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, ResendVerificationResponse } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -251,7 +251,7 @@ export class LoginComponent {
     this.error = '';
     this.success = '';
     this.authService.resendVerification(this.email).subscribe({
-      next: (res: any) => {
+      next: (res: ResendVerificationResponse) => {
         this.success = res.message;
         this.isLoading = false;
       },

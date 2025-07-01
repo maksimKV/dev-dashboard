@@ -56,6 +56,8 @@ export interface UserData {
   preferences: Preferences;
 }
 
+export interface ResendVerificationResponse { message: string; }
+
 @Injectable({
   providedIn: 'root'
 })
@@ -194,7 +196,7 @@ export class AuthService {
     });
   }
 
-  resendVerification(email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/resend-verification`, { email });
+  resendVerification(email: string): Observable<ResendVerificationResponse> {
+    return this.http.post<ResendVerificationResponse>(`${this.apiUrl}/auth/resend-verification`, { email });
   }
 } 

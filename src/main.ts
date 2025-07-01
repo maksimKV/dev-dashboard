@@ -7,7 +7,9 @@ import typescript from 'highlight.js/lib/languages/typescript';
 
 hljs.registerLanguage('javascript', javascript);
 hljs.registerLanguage('typescript', typescript);
-(window as any).hljs = hljs;
+
+interface WindowWithHLJS extends Window { hljs: typeof hljs }
+((window as unknown) as WindowWithHLJS).hljs = hljs;
 
 bootstrapApplication(App, appConfig)
   .catch((err) => console.error(err));
