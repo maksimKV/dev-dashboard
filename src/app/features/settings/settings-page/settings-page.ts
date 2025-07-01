@@ -227,6 +227,7 @@ export class SettingsPage implements OnInit {
     localStorage.setItem('keyboard-shortcuts', String(this.keyboardShortcuts));
     // Save to backend
     this.saveAllPrefsToBackend();
+    window.dispatchEvent(new Event('high-contrast-changed'));
     alert('Accessibility preferences saved!');
   }
 

@@ -55,6 +55,11 @@ export class App implements OnInit, DoCheck {
       this.loadSidebarPosition();
       this.setupResponsiveSidenav();
       window.addEventListener('storage', this.handleStorageChange.bind(this));
+      window.addEventListener('high-contrast-changed', () => {
+        this.loadHighContrast();
+        this.applyHighContrastClass();
+        this.cdr.detectChanges();
+      });
     }
   }
 
