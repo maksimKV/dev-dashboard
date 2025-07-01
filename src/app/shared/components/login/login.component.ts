@@ -15,15 +15,15 @@ import { AuthService } from '../../services/auth.service';
         
         <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
           <div class="form-group">
-            <label for="username">Username</label>
+            <label for="email">Email</label>
             <input
-              type="text"
-              id="username"
-              name="username"
-              [(ngModel)]="username"
+              type="email"
+              id="email"
+              name="email"
+              [(ngModel)]="email"
               required
               class="form-control"
-              placeholder="Enter username"
+              placeholder="Enter email address"
             />
           </div>
           
@@ -183,7 +183,7 @@ import { AuthService } from '../../services/auth.service';
   `]
 })
 export class LoginComponent {
-  username = '';
+  email = '';
   password = '';
   isLoginMode = true;
   isLoading = false;
@@ -202,7 +202,7 @@ export class LoginComponent {
   }
 
   onSubmit() {
-    if (!this.username || !this.password) {
+    if (!this.email || !this.password) {
       this.error = 'Please fill in all fields';
       return;
     }
@@ -212,8 +212,8 @@ export class LoginComponent {
     this.success = '';
 
     const authObservable = this.isLoginMode 
-      ? this.authService.login(this.username, this.password)
-      : this.authService.register(this.username, this.password);
+      ? this.authService.login(this.email, this.password)
+      : this.authService.register(this.email, this.password);
 
     authObservable.subscribe({
       next: (response) => {

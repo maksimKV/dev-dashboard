@@ -5,7 +5,7 @@ import { isPlatformBrowser } from '@angular/common';
 
 export interface User {
   id: string;
-  username: string;
+  email: string;
 }
 
 export interface AuthResponse {
@@ -80,16 +80,16 @@ export class AuthService {
     });
   }
 
-  register(username: string, password: string): Observable<AuthResponse> {
+  register(email: string, password: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, {
-      username,
+      email,
       password
     });
   }
 
-  login(username: string, password: string): Observable<AuthResponse> {
+  login(email: string, password: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, {
-      username,
+      email,
       password
     });
   }

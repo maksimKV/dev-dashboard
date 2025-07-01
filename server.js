@@ -1,3 +1,26 @@
+// Load environment variables from .env file manually
+function loadEnvFile() {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    const lines = envContent.split('\n');
+    
+    lines.forEach(line => {
+      const trimmedLine = line.trim();
+      if (trimmedLine && !trimmedLine.startsWith('#')) {
+        const [key, ...valueParts] = trimmedLine.split('=');
+        if (key && valueParts.length > 0) {
+          const value = valueParts.join('=').trim();
+          process.env[key.trim()] = value;
+        }
+      }
+    });
+    console.log('Environment variables loaded from .env file');
+  } else {
+    console.log('No .env file found, using default values');
+  }
+}
+
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -6,6 +29,11 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const fs = require('fs');
 const path = require('path');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+
+// Load environment variables
+loadEnvFile();
 
 // File paths for data storage
 const USERS_FILE = path.join(__dirname, 'data', 'users.json');
@@ -20,6 +48,7 @@ if (!fs.existsSync(dataDir)) {
 // In-memory database (replace with real database in production)
 let users = [];
 let userData = new Map();
+let emailVerificationTokens = new Map(); // Store verification tokens
 
 // Load data from files on startup
 function loadData() {
@@ -57,6 +86,70 @@ function saveData() {
   } catch (error) {
     console.error('Error saving data:', error);
   }
+}
+
+// Email configuration
+const emailConfig = {
+  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  port: process.env.EMAIL_PORT || 587,
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.EMAIL_USER || 'your-email@gmail.com',
+    pass: process.env.EMAIL_PASS || 'your-app-password'
+  },
+  tls: {
+    rejectUnauthorized: false // Allow self-signed certificates
+  }
+};
+
+// Debug: Log email configuration (without password)
+console.log('Email configuration loaded:');
+console.log('Host:', emailConfig.host);
+console.log('Port:', emailConfig.port);
+console.log('User:', emailConfig.auth.user);
+console.log('Password set:', !!emailConfig.auth.pass);
+
+// Create transporter
+const transporter = nodemailer.createTransport(emailConfig);
+
+// Email verification functions
+function generateVerificationToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+function sendVerificationEmail(email, token) {
+  console.log('Attempting to send verification email to:', email);
+  console.log('Using email config:', {
+    host: emailConfig.host,
+    port: emailConfig.port,
+    user: emailConfig.auth.user
+  });
+  
+  const verificationUrl = `http://localhost:4200/verify-email?token=${token}`;
+  
+  const mailOptions = {
+    from: emailConfig.auth.user,
+    to: email,
+    subject: 'Verify Your Email - Dev Dashboard',
+    html: `
+      <h2>Welcome to Dev Dashboard!</h2>
+      <p>Please click the link below to verify your email address:</p>
+      <a href="${verificationUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+        Verify Email
+      </a>
+      <p>Or copy and paste this link in your browser:</p>
+      <p>${verificationUrl}</p>
+      <p>This link will expire in 24 hours.</p>
+    `
+  };
+
+  console.log('Mail options prepared:', {
+    from: mailOptions.from,
+    to: mailOptions.to,
+    subject: mailOptions.subject
+  });
+
+  return transporter.sendMail(mailOptions);
 }
 
 // Load data on startup
@@ -99,6 +192,14 @@ app.use('/api/', limiter);
 
 app.use(express.json({ limit: '10mb' }));
 
+// Add request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
+  next();
+});
+
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -120,25 +221,39 @@ const authenticateToken = (req, res, next) => {
 // API Routes
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    console.log('Registration request received:', { 
+      body: req.body, 
+      contentType: req.headers['content-type'] 
+    });
+    
+    const { email, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password required' });
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Please enter a valid email address' });
     }
 
     if (password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
-    if (users.find(u => u.username === username)) {
-      return res.status(409).json({ error: 'Username already exists' });
+    if (users.find(u => u.email === email)) {
+      return res.status(409).json({ error: 'Email already registered' });
     }
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+    const verificationToken = generateVerificationToken();
+    
     const user = {
       id: Date.now().toString(),
-      username,
+      email,
       passwordHash,
+      isVerified: false,
       createdAt: new Date()
     };
 
@@ -152,16 +267,31 @@ app.post('/api/auth/register', async (req, res) => {
       preferences: {}
     });
 
+    // Store verification token
+    emailVerificationTokens.set(verificationToken, {
+      userId: user.id,
+      email: user.email,
+      createdAt: new Date()
+    });
+
     // Save data to files
     saveData();
 
-    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
-
-    res.status(201).json({
-      message: 'User created successfully',
-      token,
-      user: { id: user.id, username: user.username }
-    });
+    // Send verification email
+    try {
+      await sendVerificationEmail(email, verificationToken);
+      res.status(201).json({
+        message: 'Registration successful! Please check your email to verify your account.',
+        user: { id: user.id, email: user.email }
+      });
+    } catch (emailError) {
+      console.error('Email sending error:', emailError);
+      // Still create the user but inform about email issue
+      res.status(201).json({
+        message: 'Registration successful! Please contact support to verify your email.',
+        user: { id: user.id, email: user.email }
+      });
+    }
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -170,28 +300,49 @@ app.post('/api/auth/register', async (req, res) => {
 
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    console.log('Login request received:', { 
+      body: req.body, 
+      contentType: req.headers['content-type'] 
+    });
+    
+    const { email, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password required' });
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
     }
 
-    const user = users.find(u => u.username === username);
+    const user = users.find(u => u.email === email);
     if (!user) {
+      console.log('User not found for email:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    console.log('User found:', { id: user.id, email: user.email, isVerified: user.isVerified });
 
     const isValidPassword = await bcrypt.compare(password, user.passwordHash);
     if (!isValidPassword) {
+      console.log('Invalid password for user:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+    console.log('Password is valid for user:', email);
+
+    // Check if email is verified
+    if (!user.isVerified) {
+      console.log('User not verified:', email);
+      return res.status(401).json({ 
+        error: 'Please verify your email before logging in. Check your inbox for a verification link.' 
+      });
+    }
+
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+
+    console.log('Login successful for user:', email);
 
     res.json({
       message: 'Login successful',
       token,
-      user: { id: user.id, username: user.username }
+      user: { id: user.id, email: user.email }
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -336,12 +487,174 @@ app.put('/api/user/preferences', authenticateToken, (req, res) => {
   }
 });
 
+app.get('/api/auth/verify-email', (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Verification token required' });
+    }
+
+    const verificationData = emailVerificationTokens.get(token);
+    if (!verificationData) {
+      return res.status(400).json({ error: 'Invalid or expired verification token' });
+    }
+
+    // Check if token is expired (24 hours)
+    const tokenAge = Date.now() - verificationData.createdAt.getTime();
+    const maxAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+    if (tokenAge > maxAge) {
+      emailVerificationTokens.delete(token);
+      return res.status(400).json({ error: 'Verification token has expired' });
+    }
+
+    // Find and verify the user
+    const user = users.find(u => u.id === verificationData.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Mark user as verified
+    user.isVerified = true;
+    emailVerificationTokens.delete(token);
+
+    // Save data to files
+    saveData();
+
+    res.json({
+      message: 'Email verified successfully! You can now log in to your account.',
+      user: { id: user.id, email: user.email }
+    });
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/auth/resend-verification', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email required' });
+    }
+
+    const user = users.find(u => u.email === email);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ error: 'Email is already verified' });
+    }
+
+    // Generate new verification token
+    const verificationToken = generateVerificationToken();
+    emailVerificationTokens.set(verificationToken, {
+      userId: user.id,
+      email: user.email,
+      createdAt: new Date()
+    });
+
+    // Send verification email
+    try {
+      await sendVerificationEmail(email, verificationToken);
+      res.json({
+        message: 'Verification email sent successfully! Please check your inbox.'
+      });
+    } catch (emailError) {
+      console.error('Email sending error:', emailError);
+      res.status(500).json({ error: 'Failed to send verification email' });
+    }
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.get('/api/health', (req, res) => {
+  console.log('Health check request received');
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Test endpoint to verify server is working
+app.post('/api/test', (req, res) => {
+  console.log('Test endpoint hit:', req.body);
+  res.json({ message: 'Test endpoint working', body: req.body });
+});
+
+// Test email endpoint
+app.post('/api/test-email', async (req, res) => {
+  try {
+    console.log('Testing email configuration...');
+    
+    // Verify transporter
+    await transporter.verify();
+    console.log('Email transporter verified successfully');
+    
+    res.json({ 
+      message: 'Email configuration is working',
+      config: {
+        host: emailConfig.host,
+        port: emailConfig.port,
+        user: emailConfig.auth.user,
+        secure: emailConfig.secure
+      }
+    });
+  } catch (error) {
+    console.error('Email test failed:', error);
+    res.status(500).json({ 
+      error: 'Email configuration failed',
+      details: error.message 
+    });
+  }
+});
+
+// Development endpoint to manually verify a user (for testing)
+app.post('/api/dev/verify-user', (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email required' });
+    }
+    
+    const user = users.find(u => u.email === email);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    user.isVerified = true;
+    saveData();
+    
+    console.log('User manually verified:', email);
+    
+    res.json({ 
+      message: 'User verified successfully',
+      user: { id: user.id, email: user.email, isVerified: user.isVerified }
+    });
+  } catch (error) {
+    console.error('Manual verification error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 const port = process.env.PORT || 4000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Backend API server listening on http://localhost:${port}`);
   console.log(`Health check: http://localhost:${port}/api/health`);
+});
+
+// Keep the server running and handle errors
+server.on('error', (error) => {
+  console.error('Server error:', error);
+});
+
+process.on('SIGINT', () => {
+  console.log('Shutting down server...');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
 }); 

@@ -13,6 +13,8 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import fs from 'fs';
 import path from 'path';
+// import nodemailer from 'nodemailer';
+// import crypto from 'crypto';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -30,15 +32,16 @@ if (!fs.existsSync(dataDir)) {
 interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
-    username: string;
+    email: string;
   };
 }
 
 // In-memory database (replace with real database in production)
 interface User {
   id: string;
-  username: string;
+  email: string;
   passwordHash: string;
+  isVerified: boolean;
   createdAt: Date;
 }
 
@@ -155,10 +158,17 @@ const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextF
 // API Routes
 app.post('/api/auth/register', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !password) {
-      res.status(400).json({ error: 'Username and password required' });
+    if (!email || !password) {
+      res.status(400).json({ error: 'Email and password required' });
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      res.status(400).json({ error: 'Please enter a valid email address' });
       return;
     }
 
@@ -167,16 +177,17 @@ app.post('/api/auth/register', async (req: Request, res: Response): Promise<void
       return;
     }
 
-    if (users.find(u => u.username === username)) {
-      res.status(409).json({ error: 'Username already exists' });
+    if (users.find(u => u.email === email)) {
+      res.status(409).json({ error: 'Email already registered' });
       return;
     }
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const user: User = {
       id: Date.now().toString(),
-      username,
+      email,
       passwordHash,
+      isVerified: false,
       createdAt: new Date()
     };
 
@@ -193,12 +204,9 @@ app.post('/api/auth/register', async (req: Request, res: Response): Promise<void
     // Save data to files
     saveData();
 
-    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
-
     res.status(201).json({
-      message: 'User created successfully',
-      token,
-      user: { id: user.id, username: user.username }
+      message: 'Registration successful! Please check your email to verify your account.',
+      user: { id: user.id, email: user.email }
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -208,14 +216,14 @@ app.post('/api/auth/register', async (req: Request, res: Response): Promise<void
 
 app.post('/api/auth/login', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !password) {
-      res.status(400).json({ error: 'Username and password required' });
+    if (!email || !password) {
+      res.status(400).json({ error: 'Email and password required' });
       return;
     }
 
-    const user = users.find(u => u.username === username);
+    const user = users.find(u => u.email === email);
     if (!user) {
       res.status(401).json({ error: 'Invalid credentials' });
       return;
@@ -227,12 +235,20 @@ app.post('/api/auth/login', async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+    // Check if email is verified
+    if (!user.isVerified) {
+      res.status(401).json({ 
+        error: 'Please verify your email before logging in. Check your inbox for a verification link.' 
+      });
+      return;
+    }
+
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
     res.json({
       message: 'Login successful',
       token,
-      user: { id: user.id, username: user.username }
+      user: { id: user.id, email: user.email }
     });
   } catch (error) {
     console.error('Login error:', error);
