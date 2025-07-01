@@ -11,23 +11,6 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
-// Monkey-patch path-to-regexp to log offending input
-const Module = require('module');
-const originalRequire = Module.prototype.require;
-Module.prototype.require = function (path) {
-  const result = originalRequire.apply(this, arguments);
-  if (path === 'path-to-regexp') {
-    const origParse = result.parse;
-    result.parse = function (str, ...args) {
-      if (typeof str === 'string' && /^https?:\/\//.test(str)) {
-        console.error('[path-to-regexp] Full URL passed to parse():', str);
-      }
-      return origParse.call(this, str, ...args);
-    };
-  }
-  return result;
-};
-
 // Check for required environment variables
 const REQUIRED_ENV_VARS = ['JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS'];
 const missingVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
@@ -143,45 +126,28 @@ const sendVerificationEmail = async (email, token) => {
   const port = process.env.PORT || 4000;
   const app = express();
 
-  // Global middleware to log all incoming requests and guard against full URLs as paths
+  // 2. Add middleware to log all incoming requests
   app.use((req, res, next) => {
-    console.log('[INCOMING REQUEST]', req.method, req.url);
-    if (/^https?:\/\//.test(req.url)) {
-      console.error('[REQUEST ERROR] Full URL received as path:', req.url);
-      return res.status(400).send('Bad Request: Full URL not allowed as path');
-    }
+    console.log(`[INCOMING REQUEST] ${req.method} ${req.url}`);
     next();
   });
 
-  /**
-   * Checks if a given path is a safe Express route path (not a full URL).
-   * @param {string} path
-   * @returns {boolean}
-   */
-  function isSafeRoutePath(path) {
-    return typeof path === 'string' && !/^https?:\/\//.test(path);
-  }
-
-  // Monkey-patch route registration methods to log and catch full URL paths
-  function wrapRouteMethod(app, methodName) {
+  // 3. Add logging to all route registration calls
+  function logRouteRegistration(app, methodName) {
     const orig = app[methodName];
     app[methodName] = function (...args) {
-      if (args.length > 0) {
-        const first = args[0];
-        if (typeof first === 'string') {
-          if (!isSafeRoutePath(first)) {
-            console.error(`[ROUTE ERROR] Attempted to register a route with a full URL: ${first}`);
-            throw new Error(`Invalid route path: ${first}`);
-          } else {
-            console.log(`[ROUTE] ${methodName} registered:`, first);
-          }
-        } else {
-          console.log(`[ROUTE] ${methodName} registered with middleware only`);
-        }
+      const first = args[0];
+      if (typeof first === 'string') {
+        console.log(`[ROUTE] ${methodName} registered:`, first);
+      } else {
+        console.log(`[ROUTE] ${methodName} registered: [middleware/function]`);
       }
       return orig.apply(this, args);
     };
   }
+  ['use', 'get', 'post', 'put', 'delete', 'patch', 'all'].forEach(method =>
+    logRouteRegistration(app, method)
+  );
 
   // Security middleware with Angular-compatible CSP
   app.use(helmet({
