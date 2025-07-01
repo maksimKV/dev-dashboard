@@ -176,22 +176,26 @@ const sendVerificationEmail = async (email, token) => {
   };
 
   // Security middleware with Angular-compatible CSP
+  // WARNING: Allowing 'unsafe-inline' for script-src-attr is not recommended for production.
+  // Remove this after refactoring away from inline event handlers in your frontend code.
   app.use(helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "'sha256-VM2mZqyEQZoLzoTrp5EigFvzQ0+f1wSeBuoOn95WHCg='", "'sha256-WAFInstuijDmkdZL9gTCFeDmZQw9HbGd+IA1OUdNqjo='"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", "http://localhost:4000", "http://localhost:4200"],
+        connectSrc: ["'self'", FRONTEND_URL],
         fontSrc: ["'self'", "https:", "data:", "https://fonts.gstatic.com"],
         objectSrc: ["'none'"],
         mediaSrc: ["'self'"],
         frameSrc: ["'none'"],
+        'script-src-attr': ["'unsafe-inline'"] // TEMPORARY: Allow inline event handlers
       },
     },
     crossOriginEmbedderPolicy: false,
   }));
+  // TODO: Refactor frontend to remove inline event handlers and remove 'unsafe-inline' from script-src-attr.
 
   const allowedOrigins = [
     'https://dev-dashboard-y4gk.onrender.com',
