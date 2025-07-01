@@ -126,13 +126,22 @@ const sendVerificationEmail = async (email, token) => {
   const port = process.env.PORT || 4000;
   const app = express();
 
-  // 2. Add middleware to log all incoming requests
+  // 1. Log all incoming requests
   app.use((req, res, next) => {
-    console.log(`[INCOMING REQUEST] ${req.method} ${req.url}`);
+    console.log('[INCOMING REQUEST]', req.method, req.url);
     next();
   });
 
-  // 3. Add logging to all route registration calls
+  // 2. Guard middleware to block requests with a full URL as the path
+  app.use((req, res, next) => {
+    if (/^https?:\/\//.test(req.url)) {
+      console.error('[REQUEST ERROR] Full URL received as path:', req.url);
+      return res.status(400).send('Bad Request: Full URL not allowed as path');
+    }
+    next();
+  });
+
+  // 3. Monkey-patch all route registration methods to log registrations
   function logRouteRegistration(app, methodName) {
     const orig = app[methodName];
     app[methodName] = function (...args) {
@@ -148,6 +157,23 @@ const sendVerificationEmail = async (email, token) => {
   ['use', 'get', 'post', 'put', 'delete', 'patch', 'all'].forEach(method =>
     logRouteRegistration(app, method)
   );
+
+  // 4. Monkey-patch path-to-regexp to log full URLs passed to parse()
+  const Module = require('module');
+  const originalRequire = Module.prototype.require;
+  Module.prototype.require = function (path) {
+    const result = originalRequire.apply(this, arguments);
+    if (path === 'path-to-regexp') {
+      const origParse = result.parse;
+      result.parse = function (str, ...args) {
+        if (typeof str === 'string' && /^https?:\/\//.test(str)) {
+          console.error('[path-to-regexp] Full URL passed to parse():', str, new Error().stack);
+        }
+        return origParse.call(this, str, ...args);
+      };
+    }
+    return result;
+  };
 
   // Security middleware with Angular-compatible CSP
   app.use(helmet({
