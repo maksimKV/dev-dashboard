@@ -133,6 +133,24 @@ const SALT_ROUNDS = 10;
 
 const app = express();
 
+// Monkey-patch route registration methods to log and catch full URL paths
+function wrapRouteMethod(app, methodName) {
+  const orig = app[methodName];
+  app[methodName] = function (path, ...rest) {
+    if (typeof path === 'string' && /^https?:\/\//.test(path)) {
+      console.error(`[ROUTE ERROR] Attempted to register a route with a full URL: ${path}`);
+      // Optionally, throw an error to stop the server
+      // throw new Error(`Invalid route path: ${path}`);
+    } else {
+      console.log(`[ROUTE] ${methodName} registered:`, path);
+    }
+    return orig.call(this, path, ...rest);
+  };
+}
+['use', 'get', 'post', 'put', 'delete', 'patch', 'all'].forEach(method =>
+  wrapRouteMethod(app, method)
+);
+
 // Security middleware with Angular-compatible CSP
 app.use(helmet({
   contentSecurityPolicy: {
