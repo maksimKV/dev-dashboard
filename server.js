@@ -150,14 +150,32 @@ const SALT_ROUNDS = 10;
 
 const app = express();
 
+// Global middleware to log all incoming requests and guard against full URLs as paths
+app.use((req, res, next) => {
+  console.log('[INCOMING REQUEST]', req.method, req.url);
+  if (/^https?:\/\//.test(req.url)) {
+    console.error('[REQUEST ERROR] Full URL received as path:', req.url);
+    return res.status(400).send('Bad Request: Full URL not allowed as path');
+  }
+  next();
+});
+
+/**
+ * Checks if a given path is a safe Express route path (not a full URL).
+ * @param {string} path
+ * @returns {boolean}
+ */
+function isSafeRoutePath(path) {
+  return typeof path === 'string' && !/^https?:\/\//.test(path);
+}
+
 // Monkey-patch route registration methods to log and catch full URL paths
 function wrapRouteMethod(app, methodName) {
   const orig = app[methodName];
   app[methodName] = function (path, ...rest) {
-    if (typeof path === 'string' && /^https?:\/\//.test(path)) {
+    if (!isSafeRoutePath(path)) {
       console.error(`[ROUTE ERROR] Attempted to register a route with a full URL: ${path}`);
-      // Optionally, throw an error to stop the server
-      // throw new Error(`Invalid route path: ${path}`);
+      throw new Error(`Invalid route path: ${path}`);
     } else {
       console.log(`[ROUTE] ${methodName} registered:`, path);
     }
