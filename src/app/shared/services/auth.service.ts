@@ -159,4 +159,8 @@ export class AuthService {
       headers: this.getAuthHeaders()
     });
   }
+
+  resendVerification(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/auth/resend-verification`, { email });
+  }
 } 

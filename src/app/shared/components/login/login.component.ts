@@ -56,6 +56,9 @@ import { AuthService } from '../../services/auth.service';
         
         <div *ngIf="error" class="error-message">
           {{ error }}
+          <button *ngIf="showResend" (click)="resendVerification()" class="btn-link" [disabled]="isLoading">
+            Resend verification email
+          </button>
         </div>
         
         <div *ngIf="success" class="success-message">
@@ -189,6 +192,7 @@ export class LoginComponent {
   isLoading = false;
   error = '';
   success = '';
+  showResend = false;
 
   constructor(
     private authService: AuthService,
@@ -210,6 +214,7 @@ export class LoginComponent {
     this.isLoading = true;
     this.error = '';
     this.success = '';
+    this.showResend = false;
 
     const authObservable = this.isLoginMode 
       ? this.authService.login(this.email, this.password)
@@ -217,17 +222,41 @@ export class LoginComponent {
 
     authObservable.subscribe({
       next: (response) => {
-        this.authService.setAuth(response.token, response.user);
-        this.success = response.message;
-        this.isLoading = false;
-        
-        // Redirect to dashboard after successful auth
-        setTimeout(() => {
-          this.router.navigate(['/dashboard']);
-        }, 1000);
+        if (this.isLoginMode) {
+          this.authService.setAuth(response.token, response.user);
+          this.success = response.message;
+          this.isLoading = false;
+          setTimeout(() => {
+            this.router.navigate(['/dashboard']);
+          }, 1000);
+        } else {
+          // Registration: show message, do not log in or redirect
+          this.success = response.message;
+          this.isLoading = false;
+        }
       },
       error: (error) => {
         this.error = error.error?.error || 'An error occurred';
+        this.isLoading = false;
+        // Show resend button if error is unverified email
+        if (this.isLoginMode && this.error.toLowerCase().includes('verify your email')) {
+          this.showResend = true;
+        }
+      }
+    });
+  }
+
+  resendVerification() {
+    this.isLoading = true;
+    this.error = '';
+    this.success = '';
+    this.authService.resendVerification(this.email).subscribe({
+      next: (res: any) => {
+        this.success = res.message;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.error = err.error?.error || 'Failed to resend verification email.';
         this.isLoading = false;
       }
     });

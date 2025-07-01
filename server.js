@@ -50,6 +50,9 @@ let users = [];
 let userData = new Map();
 let emailVerificationTokens = new Map(); // Store verification tokens
 
+// Track emails currently being registered to prevent double registration/email
+const emailsBeingRegistered = new Set();
+
 // Load data from files on startup
 function loadData() {
   try {
@@ -221,16 +224,21 @@ const authenticateToken = (req, res, next) => {
 // API Routes
 app.post('/api/auth/register', async (req, res) => {
   try {
-    console.log('Registration request received:', { 
-      body: req.body, 
-      contentType: req.headers['content-type'] 
-    });
-    
+    console.log('Registration endpoint HIT for:', req.body.email);
     const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password required' });
     }
+
+    // Prevent concurrent registration for the same email
+    console.log('emailsBeingRegistered before:', Array.from(emailsBeingRegistered));
+    if (emailsBeingRegistered.has(email)) {
+      console.log('Registration already in progress for:', email);
+      return res.status(429).json({ error: 'Registration already in progress for this email. Please wait.' });
+    }
+    emailsBeingRegistered.add(email);
+    console.log('emailsBeingRegistered after add:', Array.from(emailsBeingRegistered));
 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -279,6 +287,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     // Send verification email
     try {
+      console.log('About to send verification email for:', email);
       await sendVerificationEmail(email, verificationToken);
       res.status(201).json({
         message: 'Registration successful! Please check your email to verify your account.',
@@ -286,15 +295,21 @@ app.post('/api/auth/register', async (req, res) => {
       });
     } catch (emailError) {
       console.error('Email sending error:', emailError);
-      // Still create the user but inform about email issue
       res.status(201).json({
         message: 'Registration successful! Please contact support to verify your email.',
         user: { id: user.id, email: user.email }
       });
+    } finally {
+      emailsBeingRegistered.delete(email);
+      console.log('emailsBeingRegistered after delete:', Array.from(emailsBeingRegistered));
     }
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Internal server error' });
+    if (req.body && req.body.email) {
+      emailsBeingRegistered.delete(req.body.email);
+      console.log('emailsBeingRegistered after error delete:', Array.from(emailsBeingRegistered));
+    }
   }
 });
 
