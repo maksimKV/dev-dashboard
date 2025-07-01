@@ -140,6 +140,7 @@ const sendVerificationEmail = async (email, token) => {
   await loadData();
   const port = process.env.PORT || 4000;
   const app = express();
+  app.set('trust proxy', 1); // Trust first proxy (required for Render and rate limiting)
 
   // 1. Log all incoming requests
   app.use((req, res, next) => {
