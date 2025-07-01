@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 2rem;
   width: 100%;
-  max-width: 1200px;
+  max-width: none;
   margin: 0 auto;
 }
 
@@ -16,7 +16,7 @@
 
 .columns {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
   justify-content: space-between;
 }
 
@@ -26,7 +26,7 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   padding: 1rem;
   flex: 1 1 0;
-  min-width: 260px;
+  min-width: 0;
   max-width: 350px;
   display: flex;
   flex-direction: column;
