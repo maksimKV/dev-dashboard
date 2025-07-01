@@ -115,9 +115,10 @@ describe('AuthService', () => {
   });
 
   it('should resend verification', () => {
-    http.post.and.returnValue(of({}));
+    const mockResendVerificationResponse = { message: 'Verification email sent' };
+    http.post.and.returnValue(of(mockResendVerificationResponse));
     service.resendVerification('test@example.com').subscribe(res => {
-      expect(res).toEqual({});
+      expect(res).toEqual(mockResendVerificationResponse);
     });
     expect(http.post).toHaveBeenCalled();
   });
