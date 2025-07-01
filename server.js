@@ -653,6 +653,23 @@ const sendVerificationEmail = async (email, token) => {
     index: false  // Don't serve index.html automatically
   }));
 
+  // Middleware: If a static file is requested but does not exist, return 404 instead of index.html
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
+    // Only check for requests that look like static files (have an extension)
+    if (/\.[a-zA-Z0-9]+$/.test(req.path)) {
+      const filePath = path.join(frontendDir, req.path);
+      fs.access(filePath)
+        .then(() => next()) // File exists, let static middleware handle it
+        .catch(() => {
+          console.warn('[404] Static file not found:', req.path);
+          res.status(404).send('Not found');
+        });
+    } else {
+      next();
+    }
+  });
+
   // Angular routing fallback: send index.html for all non-API, non-static requests
   app.use((req, res, next) => {
     if (req.path.startsWith('/api/')) return next();
