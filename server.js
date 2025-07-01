@@ -1,24 +1,4 @@
-// Load environment variables from .env file manually
-function loadEnvFile() {
-  const envPath = path.join(__dirname, '.env');
-  if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, 'utf8');
-    const lines = envContent.split('\n');
-    
-    lines.forEach(line => {
-      const trimmedLine = line.trim();
-      if (trimmedLine && !trimmedLine.startsWith('#')) {
-        const [key, ...valueParts] = trimmedLine.split('=');
-        if (key && valueParts.length > 0) {
-          const value = valueParts.join('=').trim();
-          process.env[key.trim()] = value;
-        }
-      }
-    });
-  } else {
-    console.log('No .env file found, using default values');
-  }
-}
+require('dotenv').config();
 
 const express = require('express');
 const bcrypt = require('bcryptjs');
@@ -30,9 +10,6 @@ const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-
-// Load environment variables
-loadEnvFile();
 
 // Check for required environment variables
 const REQUIRED_ENV_VARS = ['JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS'];
