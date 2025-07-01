@@ -627,7 +627,7 @@ const sendVerificationEmail = async (email, token) => {
   app.use(express.static(frontendDir));
 
   // Angular routing fallback
-  app.get('/*', (req, res, next) => {
+  app.get('/:any(*)', (req, res, next) => {
     if (req.path.startsWith('/api/')) return next(); // skip API routes
     res.sendFile(path.join(frontendDir, 'index.html'));
   });
