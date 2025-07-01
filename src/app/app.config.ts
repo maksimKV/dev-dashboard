@@ -11,7 +11,7 @@ const MARKDOWN_PROVIDERS = MarkdownModule.forRoot().providers ?? [];
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    provideClientHydration(),
+    // provideClientHydration(), // Removed for NG0908 isolation
     ...MARKDOWN_PROVIDERS,
     provideCharts(withDefaultRegisterables()),
     provideHttpClient(withInterceptorsFromDi(), withFetch())
