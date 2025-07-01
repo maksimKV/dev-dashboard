@@ -118,7 +118,6 @@ export class FocusTimer implements OnInit, OnDestroy {
 
     this.authService.updateFocusTimer(state).subscribe({
       next: () => {
-        console.log('Timer state saved successfully');
       },
       error: (error) => {
         console.error('Failed to save timer state:', error);

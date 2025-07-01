@@ -104,7 +104,8 @@ export class KanbanBoard implements OnInit, OnDestroy {
 
     this.authService.updateKanbanTasks(data).subscribe({
       next: () => {
-        console.log('Tasks saved successfully');
+        // Fallback to localStorage if API fails
+        localStorage.setItem('kanban-tasks', JSON.stringify(data));
       },
       error: (error) => {
         console.error('Failed to save tasks:', error);

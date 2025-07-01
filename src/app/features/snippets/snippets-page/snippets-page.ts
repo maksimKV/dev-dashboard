@@ -118,11 +118,12 @@ export class SnippetsPage implements OnInit {
     
     this.authService.updateSnippets(this.snippets).subscribe({
       next: () => {
-        console.log('Snippets saved successfully');
+        // Fallback to localStorage if API fails
+        localStorage.setItem('snippets', JSON.stringify(this.snippets));
       },
       error: (error) => {
         console.error('Failed to save snippets:', error);
-        // Fallback to localStorage if API fails
+        // Fallback to localStorage
         localStorage.setItem('snippets', JSON.stringify(this.snippets));
       }
     });

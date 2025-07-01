@@ -47,7 +47,8 @@ export class NotesPage implements OnInit {
     
     this.authService.updateMarkdownNote(this.markdown).subscribe({
       next: () => {
-        console.log('Note saved successfully');
+        // Fallback to localStorage if API fails
+        localStorage.setItem('markdown-note', this.markdown);
       },
       error: (error) => {
         console.error('Failed to save note:', error);
