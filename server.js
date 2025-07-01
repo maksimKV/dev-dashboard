@@ -200,7 +200,7 @@ const sendVerificationEmail = async (email, token) => {
         scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", "https://dev-dashboard-y4gk.onrender.com"], // Only allow self and deployed API
+        connectSrc: ["'self'", "https://dev-dashboard-y4gk.onrender.com", "http://localhost:4000"], // Added localhost for dev
         fontSrc: ["'self'", "https:", "data:", "https://fonts.gstatic.com"],
         objectSrc: ["'none'"],
         mediaSrc: ["'self'"],
