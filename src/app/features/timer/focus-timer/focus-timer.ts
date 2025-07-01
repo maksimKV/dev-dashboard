@@ -33,6 +33,7 @@ export class FocusTimer implements OnInit, OnDestroy {
   totalWorkSeconds = 0;
   isBrowser: boolean;
   isLoading = false;
+  private finishAudio: HTMLAudioElement | null = null;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object, 
@@ -45,6 +46,10 @@ export class FocusTimer implements OnInit, OnDestroy {
   ngOnInit() {
     if (this.isBrowser) {
       this.loadState();
+      this.finishAudio = new Audio('/timer-finish.mp3');
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
     }
   }
 
@@ -65,6 +70,7 @@ export class FocusTimer implements OnInit, OnDestroy {
       } else {
         this.isRunning = false;
         if (this.intervalId) clearInterval(this.intervalId);
+        this.notifyFinish();
         if (this.isWork) {
           this.completedFocusSessions++;
           this.isWork = false;
@@ -178,5 +184,25 @@ export class FocusTimer implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.intervalId) clearInterval(this.intervalId);
+  }
+
+  private notifyFinish() {
+    if (this.finishAudio) {
+      let playCount = 0;
+      const maxPlays = 6;
+      const playSound = () => {
+        if (!this.finishAudio) return;
+        this.finishAudio.currentTime = 0;
+        this.finishAudio.play();
+        playCount++;
+        if (playCount < maxPlays) {
+          setTimeout(playSound, 400);
+        }
+      };
+      playSound();
+    }
+    if (this.isBrowser && 'Notification' in window && Notification.permission === 'granted') {
+      new Notification('Focus Timer', { body: this.isWork ? 'Work session finished!' : 'Break finished!' });
+    }
   }
 }
