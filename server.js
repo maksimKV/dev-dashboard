@@ -23,6 +23,21 @@ if (missingVars.length > 0) {
 const USERS_FILE = path.join(__dirname, 'data', 'users.json');
 const USER_DATA_FILE = path.join(__dirname, 'data', 'userData.json');
 
+// Helper functions for reading and writing JSON files
+async function readJson(file, defaultValue) {
+  try {
+    const data = await fs.readFile(file, 'utf8');
+    return JSON.parse(data);
+  } catch (err) {
+    if (err.code === 'ENOENT') return defaultValue;
+    throw err;
+  }
+}
+
+async function writeJson(file, data) {
+  await fs.writeFile(file, JSON.stringify(data, null, 2), 'utf8');
+}
+
 // Ensure data directory exists
 const ensureDataDir = async () => {
   const dataDir = path.dirname(USERS_FILE);
