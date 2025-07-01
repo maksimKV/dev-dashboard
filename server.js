@@ -15,7 +15,6 @@ const crypto = require('crypto');
 const REQUIRED_ENV_VARS = ['JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS'];
 const missingVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
 if (missingVars.length > 0) {
-  console.error('Missing required environment variables:', missingVars.join(', '));
   process.exit(1);
 }
 
@@ -75,7 +74,6 @@ function saveData() {
     const userDataJson = JSON.stringify(userDataArray, null, 2);
     fs.writeFileSync(USER_DATA_FILE, userDataJson);
   } catch (error) {
-    console.error('Error saving data:', error);
   }
 }
 
@@ -290,7 +288,6 @@ app.post('/api/auth/register', async (req, res) => {
       emailsBeingRegistered.delete(email);
     }
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
     if (req.body && req.body.email) {
       emailsBeingRegistered.delete(req.body.email);
     }
@@ -350,7 +347,6 @@ app.post('/api/auth/login', async (req, res) => {
       user: { id: user.id, email: user.email }
     });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -371,7 +367,6 @@ app.get('/api/user/data', authenticateToken, (req, res) => {
       preferences: data.preferences
     });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -379,6 +374,9 @@ app.put('/api/user/kanban-tasks', authenticateToken, (req, res) => {
   try {
     const userId = req.user.userId;
     const { kanbanTasks } = req.body;
+    if (!kanbanTasks || typeof kanbanTasks !== 'object') {
+      return res.status(400).json({ error: 'Invalid kanbanTasks data' });
+    }
 
     const data = userData.get(userId);
     if (!data) {
@@ -393,7 +391,6 @@ app.put('/api/user/kanban-tasks', authenticateToken, (req, res) => {
 
     res.json({ message: 'Kanban tasks updated successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -401,6 +398,9 @@ app.put('/api/user/focus-timer', authenticateToken, (req, res) => {
   try {
     const userId = req.user.userId;
     const { focusTimer } = req.body;
+    if (!focusTimer || typeof focusTimer !== 'object') {
+      return res.status(400).json({ error: 'Invalid focusTimer data' });
+    }
 
     const data = userData.get(userId);
     if (!data) {
@@ -415,14 +415,18 @@ app.put('/api/user/focus-timer', authenticateToken, (req, res) => {
 
     res.json({ message: 'Focus timer updated successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 app.put('/api/user/markdown-note', authenticateToken, (req, res) => {
   try {
     const userId = req.user.userId;
-    const { markdownNote } = req.body;
+    let { markdownNote } = req.body;
+    if (typeof markdownNote !== 'string' || markdownNote.length > 10000) {
+      return res.status(400).json({ error: 'Invalid markdown note' });
+    }
+    // Basic sanitization: strip <script> tags
+    markdownNote = markdownNote.replace(/<script.*?>.*?<\/script>/gi, '');
 
     const data = userData.get(userId);
     if (!data) {
@@ -437,14 +441,23 @@ app.put('/api/user/markdown-note', authenticateToken, (req, res) => {
 
     res.json({ message: 'Markdown note updated successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 app.put('/api/user/snippets', authenticateToken, (req, res) => {
   try {
     const userId = req.user.userId;
-    const { snippets } = req.body;
+    let { snippets } = req.body;
+    if (!Array.isArray(snippets)) {
+      return res.status(400).json({ error: 'Invalid snippets data' });
+    }
+    // Basic sanitization: strip <script> tags from code
+    snippets = snippets.map(snippet => {
+      if (snippet && typeof snippet.code === 'string') {
+        snippet.code = snippet.code.replace(/<script.*?>.*?<\/script>/gi, '');
+      }
+      return snippet;
+    });
 
     const data = userData.get(userId);
     if (!data) {
@@ -459,7 +472,6 @@ app.put('/api/user/snippets', authenticateToken, (req, res) => {
 
     res.json({ message: 'Snippets updated successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -467,6 +479,9 @@ app.put('/api/user/preferences', authenticateToken, (req, res) => {
   try {
     const userId = req.user.userId;
     const { preferences } = req.body;
+    if (!preferences || typeof preferences !== 'object') {
+      return res.status(400).json({ error: 'Invalid preferences data' });
+    }
 
     const data = userData.get(userId);
     if (!data) {
@@ -481,7 +496,6 @@ app.put('/api/user/preferences', authenticateToken, (req, res) => {
 
     res.json({ message: 'Preferences updated successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -525,7 +539,6 @@ app.get('/api/auth/verify-email', (req, res) => {
       user: { id: user.id, email: user.email }
     });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -564,7 +577,6 @@ app.post('/api/auth/resend-verification', async (req, res) => {
       res.status(500).json({ error: 'Failed to send verification email' });
     }
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -593,10 +605,6 @@ app.post('/api/test-email', async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ 
-      error: 'Email configuration failed',
-      details: error.message 
-    });
   }
 });
 
@@ -622,7 +630,6 @@ app.post('/api/dev/verify-user', (req, res) => {
       user: { id: user.id, email: user.email, isVerified: user.isVerified }
     });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -638,20 +645,10 @@ setInterval(() => {
 }, 60 * 60 * 1000); // every hour
 
 const port = process.env.PORT || 4000;
-const server = app.listen(port, () => {
-  console.log(`Backend API server listening on http://localhost:${port}`);
-  console.log(`Health check: http://localhost:${port}/api/health`);
-});
-
-// Keep the server running and handle errors
-server.on('error', (error) => {
-  console.error('Server error:', error);
-});
+const server = app.listen(port);
 
 process.on('SIGINT', () => {
-  console.log('Shutting down server...');
   server.close(() => {
-    console.log('Server closed');
     process.exit(0);
   });
 }); 
