@@ -559,6 +559,13 @@ app.post('/api/auth/resend-verification', async (req, res) => {
       return res.status(400).json({ error: 'Email is already verified' });
     }
 
+    // Invalidate all previous tokens for this user
+    for (const [token, data] of emailVerificationTokens.entries()) {
+      if (data.userId === user.id) {
+        emailVerificationTokens.delete(token);
+      }
+    }
+
     // Generate new verification token
     const verificationToken = generateVerificationToken();
     emailVerificationTokens.set(verificationToken, {
