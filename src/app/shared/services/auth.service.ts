@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { Task } from '../models/task.model';
 import { Snippet } from '../models/snippet.model';
+import { environment } from '../../../environments/environment';
 
 export interface User {
   id: string;
@@ -70,7 +71,7 @@ export class AuthService {
   token$ = this.tokenSubject.asObservable();
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-  private apiUrl = 'http://localhost:4000/api';
+  private apiUrl = environment.apiUrl;
   private isBrowser: boolean;
 
   constructor(
