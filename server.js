@@ -173,21 +173,22 @@ function isSafeRoutePath(path) {
 function wrapRouteMethod(app, methodName) {
   const orig = app[methodName];
   app[methodName] = function (...args) {
-    const first = args[0];
-    if (!isSafeRoutePath(first)) {
-      console.error(`[ROUTE ERROR] Attempted to register a route with a full URL: ${first}`);
-      throw new Error(`Invalid route path: ${first}`);
-    } else if (typeof first === 'string') {
-      console.log(`[ROUTE] ${methodName} registered:`, first);
-    } else {
-      console.log(`[ROUTE] ${methodName} registered: [middleware/function]`);
+    if (args.length > 0) {
+      const first = args[0];
+      if (typeof first === 'string') {
+        if (!isSafeRoutePath(first)) {
+          console.error(`[ROUTE ERROR] Attempted to register a route with a full URL: ${first}`);
+          throw new Error(`Invalid route path: ${first}`);
+        } else {
+          console.log(`[ROUTE] ${methodName} registered:`, first);
+        }
+      } else {
+        console.log(`[ROUTE] ${methodName} registered with middleware only`);
+      }
     }
     return orig.apply(this, args);
   };
 }
-['use', 'get', 'post', 'put', 'delete', 'patch', 'all'].forEach(method =>
-  wrapRouteMethod(app, method)
-);
 
 // Security middleware with Angular-compatible CSP
 app.use(helmet({
