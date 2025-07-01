@@ -503,7 +503,7 @@ app.put('/api/user/snippets', authenticateToken, (req, res) => {
 app.put('/api/user/preferences', authenticateToken, (req, res) => {
   try {
     const userId = req.user.userId;
-    const { preferences } = req.body;
+    let { preferences } = req.body;
     if (!preferences || typeof preferences !== 'object') {
       return res.status(400).json({ error: 'Invalid preferences data' });
     }
@@ -526,151 +526,31 @@ app.put('/api/user/preferences', authenticateToken, (req, res) => {
   }
 });
 
+// Email verification route
 app.get('/api/auth/verify-email', (req, res) => {
   try {
     const { token } = req.query;
-
     if (!token) {
-      return res.status(400).json({ error: 'Verification token required' });
+      return res.status(400).json({ error: 'Verification token missing' });
     }
 
-    const verificationData = emailVerificationTokens.get(token);
-    if (!verificationData) {
+    const tokenData = emailVerificationTokens.get(token);
+    if (!tokenData) {
       return res.status(400).json({ error: 'Invalid or expired verification token' });
     }
 
-    // Check if token is expired (24 hours)
-    const tokenAge = Date.now() - verificationData.createdAt.getTime();
-    const maxAge = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-
-    if (tokenAge > maxAge) {
-      emailVerificationTokens.delete(token);
-      return res.status(400).json({ error: 'Verification token has expired' });
-    }
-
-    // Find and verify the user
-    const user = users.find(u => u.id === verificationData.userId);
+    const user = users.find(u => u.id === tokenData.userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Mark user as verified
     user.isVerified = true;
     emailVerificationTokens.delete(token);
-
-    // Save data to files
     saveData();
 
-    res.json({
-      message: 'Email verified successfully! You can now log in to your account.',
-      user: { id: user.id, email: user.email }
-    });
+    res.json({ message: 'Email verified successfully. You can now log in.' });
   } catch (error) {
-    console.error('Verify email error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-app.post('/api/auth/resend-verification', async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ error: 'Email required' });
-    }
-
-    const user = users.find(u => u.email === email);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    if (user.isVerified) {
-      return res.status(400).json({ error: 'Email is already verified' });
-    }
-
-    // Invalidate all previous tokens for this user
-    for (const [token, data] of emailVerificationTokens.entries()) {
-      if (data.userId === user.id) {
-        emailVerificationTokens.delete(token);
-      }
-    }
-
-    // Generate new verification token
-    const verificationToken = generateVerificationToken();
-    emailVerificationTokens.set(verificationToken, {
-      userId: user.id,
-      email: user.email,
-      createdAt: new Date()
-    });
-
-    // Send verification email
-    try {
-      await sendVerificationEmail(email, verificationToken);
-      res.json({
-        message: 'Verification email sent successfully! Please check your inbox.'
-      });
-    } catch (emailError) {
-      res.status(500).json({ error: 'Failed to send verification email' });
-    }
-  } catch (error) {
-    console.error('Resend verification error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
-
-// Test endpoint to verify server is working
-app.post('/api/test', (req, res) => {
-  res.json({ message: 'Test endpoint working', body: req.body });
-});
-
-// Test email endpoint
-app.post('/api/test-email', async (req, res) => {
-  try {
-    // Verify transporter
-    await transporter.verify();
-    
-    res.json({ 
-      message: 'Email configuration is working',
-      config: {
-        host: emailConfig.host,
-        port: emailConfig.port,
-        user: emailConfig.auth.user,
-        secure: emailConfig.secure
-      }
-    });
-  } catch (error) {
-    console.error('Test email error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Development endpoint to manually verify a user (for testing)
-app.post('/api/dev/verify-user', (req, res) => {
-  try {
-    const { email } = req.body;
-    
-    if (!email) {
-      return res.status(400).json({ error: 'Email required' });
-    }
-    
-    const user = users.find(u => u.email === email);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    user.isVerified = true;
-    saveData();
-    
-    res.json({ 
-      message: 'User verified successfully',
-      user: { id: user.id, email: user.email, isVerified: user.isVerified }
-    });
-  } catch (error) {
-    console.error('Dev verify user error:', error);
+    console.error('Email verification error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -686,8 +566,23 @@ setInterval(() => {
   }
 }, 60 * 60 * 1000); // every hour
 
+// 🔥 Serve Angular production build (dist/dev-dashboard)
+const frontendDir = path.join(__dirname, 'dist', 'dev-dashboard');
+if (fs.existsSync(frontendDir)) {
+  app.use(express.static(frontendDir));
+
+  // Angular routing fallback
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next(); // skip API routes
+    res.sendFile(path.join(frontendDir, 'index.html'));
+  });
+}
+
+// Start server
 const port = process.env.PORT || 4000;
-const server = app.listen(port);
+const server = app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
 
 server.on('error', (error) => {
   console.error('Server error:', error);
@@ -697,4 +592,4 @@ process.on('SIGINT', () => {
   server.close(() => {
     process.exit(0);
   });
-}); 
+});
