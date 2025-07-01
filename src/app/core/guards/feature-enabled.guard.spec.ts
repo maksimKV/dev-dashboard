@@ -38,9 +38,8 @@ describe('featureEnabledGuard', () => {
 
   it('should allow SSR to render', () => {
     // Set platformId to 'server' to simulate SSR
-    platformId = 'server';
+    TestBed.overrideProvider(PLATFORM_ID, { useValue: 'server' });
     const result = TestBed.runInInjectionContext(() => {
-      // Inject PLATFORM_ID as 'server' for this test
       const guard = featureEnabledGuard('tasks');
       return guard({} as any, {} as any);
     });
@@ -66,6 +65,7 @@ describe('featureEnabledGuard', () => {
   });
 
   it('should handle invalid localStorage', () => {
+    spyOn(console, 'error');
     (window.localStorage.getItem as jasmine.Spy).and.returnValue('not-json');
     const result = TestBed.runInInjectionContext(() => {
       const guard = featureEnabledGuard('tasks');
