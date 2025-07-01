@@ -172,14 +172,17 @@ function isSafeRoutePath(path) {
 // Monkey-patch route registration methods to log and catch full URL paths
 function wrapRouteMethod(app, methodName) {
   const orig = app[methodName];
-  app[methodName] = function (path, ...rest) {
-    if (!isSafeRoutePath(path)) {
-      console.error(`[ROUTE ERROR] Attempted to register a route with a full URL: ${path}`);
-      throw new Error(`Invalid route path: ${path}`);
+  app[methodName] = function (...args) {
+    const first = args[0];
+    if (!isSafeRoutePath(first)) {
+      console.error(`[ROUTE ERROR] Attempted to register a route with a full URL: ${first}`);
+      throw new Error(`Invalid route path: ${first}`);
+    } else if (typeof first === 'string') {
+      console.log(`[ROUTE] ${methodName} registered:`, first);
     } else {
-      console.log(`[ROUTE] ${methodName} registered:`, path);
+      console.log(`[ROUTE] ${methodName} registered: [middleware/function]`);
     }
-    return orig.call(this, path, ...rest);
+    return orig.apply(this, args);
   };
 }
 ['use', 'get', 'post', 'put', 'delete', 'patch', 'all'].forEach(method =>
