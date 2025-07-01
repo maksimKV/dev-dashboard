@@ -2,6 +2,8 @@ import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
+import { Task } from '../models/task.model';
+import { Snippet } from '../models/snippet.model';
 
 export interface User {
   id: string;
@@ -14,12 +16,44 @@ export interface AuthResponse {
   user: User;
 }
 
+export interface FocusTimer {
+  workDuration: number;
+  breakDuration: number;
+  timeLeft: number;
+  isRunning: boolean;
+  isWork: boolean;
+  completedFocusSessions: number;
+  totalWorkSeconds: number;
+}
+
+export interface Preferences {
+  defaultLandingPage: string;
+  focusDuration: number;
+  breakDuration: number;
+  features: {
+    tasks: boolean;
+    notes: boolean;
+    timer: boolean;
+    snippets: boolean;
+    stats: boolean;
+  };
+  sidebarPosition: string;
+  compactMode: boolean;
+  fontSize: string;
+  highContrast: boolean;
+  keyboardShortcuts: boolean;
+}
+
 export interface UserData {
-  kanbanTasks: any;
-  focusTimer: any;
+  kanbanTasks: {
+    todo: Task[];
+    inProgress: Task[];
+    done: Task[];
+  };
+  focusTimer: FocusTimer;
   markdownNote: string;
-  snippets: any[];
-  preferences: any;
+  snippets: Snippet[];
+  preferences: Preferences;
 }
 
 @Injectable({
@@ -130,32 +164,32 @@ export class AuthService {
     });
   }
 
-  updateKanbanTasks(kanbanTasks: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/user/kanban-tasks`, { kanbanTasks }, {
+  updateKanbanTasks(kanbanTasks: { todo: Task[]; inProgress: Task[]; done: Task[] }): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/user/kanban-tasks`, { kanbanTasks }, {
       headers: this.getAuthHeaders()
     });
   }
 
-  updateFocusTimer(focusTimer: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/user/focus-timer`, { focusTimer }, {
+  updateFocusTimer(focusTimer: FocusTimer): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/user/focus-timer`, { focusTimer }, {
       headers: this.getAuthHeaders()
     });
   }
 
-  updateMarkdownNote(markdownNote: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/user/markdown-note`, { markdownNote }, {
+  updateMarkdownNote(markdownNote: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/user/markdown-note`, { markdownNote }, {
       headers: this.getAuthHeaders()
     });
   }
 
-  updateSnippets(snippets: any[]): Observable<any> {
-    return this.http.put(`${this.apiUrl}/user/snippets`, { snippets }, {
+  updateSnippets(snippets: Snippet[]): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/user/snippets`, { snippets }, {
       headers: this.getAuthHeaders()
     });
   }
 
-  updatePreferences(preferences: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/user/preferences`, { preferences }, {
+  updatePreferences(preferences: Preferences): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/user/preferences`, { preferences }, {
       headers: this.getAuthHeaders()
     });
   }

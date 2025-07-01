@@ -15,6 +15,7 @@ import fs from 'fs';
 import path from 'path';
 // import nodemailer from 'nodemailer';
 // import crypto from 'crypto';
+import { JwtPayload } from 'jsonwebtoken';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -45,13 +46,61 @@ interface User {
   createdAt: Date;
 }
 
+interface Task {
+  id: string;
+  title: string;
+  description?: string;
+}
+
+interface Snippet {
+  id: string;
+  title: string;
+  code: string;
+  language: string;
+  tags?: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+interface FocusTimer {
+  workDuration: number;
+  breakDuration: number;
+  timeLeft: number;
+  isRunning: boolean;
+  isWork: boolean;
+  completedFocusSessions: number;
+  totalWorkSeconds: number;
+}
+
+interface Preferences {
+  defaultLandingPage: string;
+  focusDuration: number;
+  breakDuration: number;
+  features: {
+    tasks: boolean;
+    notes: boolean;
+    timer: boolean;
+    snippets: boolean;
+    stats: boolean;
+  };
+  sidebarPosition: string;
+  compactMode: boolean;
+  fontSize: string;
+  highContrast: boolean;
+  keyboardShortcuts: boolean;
+}
+
 interface UserData {
   userId: string;
-  kanbanTasks: any;
-  focusTimer: any;
+  kanbanTasks: {
+    todo: Task[];
+    inProgress: Task[];
+    done: Task[];
+  };
+  focusTimer: FocusTimer;
   markdownNote: string;
-  snippets: any[];
-  preferences: any;
+  snippets: Snippet[];
+  preferences: Preferences;
 }
 
 // In-memory storage (replace with database)
@@ -64,10 +113,8 @@ function loadData(): void {
     if (fs.existsSync(USERS_FILE)) {
       const usersData = fs.readFileSync(USERS_FILE, 'utf8');
       users = JSON.parse(usersData);
-      console.log(`Loaded ${users.length} users from file`);
     }
   } catch (error) {
-    console.error('Error loading users:', error);
     users = [];
   }
 
@@ -76,10 +123,8 @@ function loadData(): void {
       const userDataString = fs.readFileSync(USER_DATA_FILE, 'utf8');
       const userDataArray = JSON.parse(userDataString);
       userData = new Map(userDataArray);
-      console.log(`Loaded data for ${userData.size} users from file`);
     }
   } catch (error) {
-    console.error('Error loading user data:', error);
     userData = new Map();
   }
 }
@@ -90,16 +135,22 @@ function saveData(): void {
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
     const userDataArray = Array.from(userData.entries());
     fs.writeFileSync(USER_DATA_FILE, JSON.stringify(userDataArray, null, 2));
-    console.log('Data saved to files successfully');
   } catch (error) {
-    console.error('Error saving data:', error);
   }
 }
 
 // Load data on startup
 loadData();
 
-const JWT_SECRET = process.env['JWT_SECRET'] || 'your-secret-key-change-in-production';
+// Check for required environment variables
+const REQUIRED_ENV_VARS = ['JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS'];
+const missingVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+if (missingVars.length > 0) {
+  console.error('Missing required environment variables:', missingVars.join(', '));
+  process.exit(1);
+}
+
+const JWT_SECRET = process.env['JWT_SECRET']!;
 const SALT_ROUNDS = 10;
 
 const app = express();
@@ -145,12 +196,12 @@ const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextF
     return;
   }
 
-  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
-    if (err) {
+  jwt.verify(token, JWT_SECRET, (err: Error | null, decoded: any) => {
+    if (err || !decoded || !decoded.userId || !decoded.email) {
       res.status(403).json({ error: 'Invalid token' });
       return;
     }
-    req.user = user;
+    req.user = { userId: decoded.userId, email: decoded.email };
     next();
   });
 };
@@ -195,10 +246,28 @@ app.post('/api/auth/register', async (req: Request, res: Response): Promise<void
     userData.set(user.id, {
       userId: user.id,
       kanbanTasks: { todo: [], inProgress: [], done: [] },
-      focusTimer: {},
+      focusTimer: {
+        workDuration: 25,
+        breakDuration: 5,
+        timeLeft: 25 * 60,
+        isRunning: false,
+        isWork: true,
+        completedFocusSessions: 0,
+        totalWorkSeconds: 0
+      },
       markdownNote: '',
       snippets: [],
-      preferences: {}
+      preferences: {
+        defaultLandingPage: 'dashboard',
+        focusDuration: 25,
+        breakDuration: 5,
+        features: { tasks: true, notes: true, timer: true, snippets: true, stats: true },
+        sidebarPosition: 'left',
+        compactMode: false,
+        fontSize: 'medium',
+        highContrast: false,
+        keyboardShortcuts: true
+      }
     });
 
     // Save data to files
@@ -209,7 +278,6 @@ app.post('/api/auth/register', async (req: Request, res: Response): Promise<void
       user: { id: user.id, email: user.email }
     });
   } catch (error) {
-    console.error('Registration error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -251,7 +319,6 @@ app.post('/api/auth/login', async (req: Request, res: Response): Promise<void> =
       user: { id: user.id, email: user.email }
     });
   } catch (error) {
-    console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -274,7 +341,6 @@ app.get('/api/user/data', authenticateToken, (req: AuthenticatedRequest, res: Re
       preferences: data.preferences
     });
   } catch (error) {
-    console.error('Get data error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -298,7 +364,6 @@ app.put('/api/user/kanban-tasks', authenticateToken, (req: AuthenticatedRequest,
 
     res.json({ message: 'Kanban tasks updated successfully' });
   } catch (error) {
-    console.error('Update kanban tasks error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -322,7 +387,6 @@ app.put('/api/user/focus-timer', authenticateToken, (req: AuthenticatedRequest, 
 
     res.json({ message: 'Focus timer updated successfully' });
   } catch (error) {
-    console.error('Update focus timer error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -346,7 +410,6 @@ app.put('/api/user/markdown-note', authenticateToken, (req: AuthenticatedRequest
 
     res.json({ message: 'Markdown note updated successfully' });
   } catch (error) {
-    console.error('Update markdown note error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -370,7 +433,6 @@ app.put('/api/user/snippets', authenticateToken, (req: AuthenticatedRequest, res
 
     res.json({ message: 'Snippets updated successfully' });
   } catch (error) {
-    console.error('Update snippets error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -394,7 +456,6 @@ app.put('/api/user/preferences', authenticateToken, (req: AuthenticatedRequest, 
 
     res.json({ message: 'Preferences updated successfully' });
   } catch (error) {
-    console.error('Update preferences error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -436,8 +497,6 @@ if (isMainModule(import.meta.url)) {
     if (error) {
       throw error;
     }
-
-    console.log(`Node Express server listening on http://localhost:${port}`);
   });
 }
 
