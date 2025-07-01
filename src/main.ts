@@ -5,9 +5,11 @@ import { App } from './app/app';
 import hljs from 'highlight.js/lib/core';
 import javascript from 'highlight.js/lib/languages/javascript';
 import typescript from 'highlight.js/lib/languages/typescript';
+import sql from 'highlight.js/lib/languages/sql';
 
 hljs.registerLanguage('javascript', javascript);
 hljs.registerLanguage('typescript', typescript);
+hljs.registerLanguage('sql', sql);
 
 interface WindowWithHLJS extends Window { hljs: typeof hljs }
 ((window as unknown) as WindowWithHLJS).hljs = hljs;
