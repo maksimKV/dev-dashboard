@@ -13,8 +13,3 @@ interface WindowWithHLJS extends Window { hljs: typeof hljs }
 
 bootstrapApplication(App, appConfig)
   .catch((err) => console.error(err));
-
-// Remove or comment out service worker registration
-// if ('serviceWorker' in navigator) {
-//   navigator.serviceWorker.register('ngsw-worker.js');
-// }
