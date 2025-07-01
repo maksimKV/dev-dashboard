@@ -11,6 +11,8 @@
     <button mat-raised-button color="primary" type="submit">Set</button>
   </form>
 
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
   <div class="timer-display" [class.break]="!isWork">
     <span class="minutes">{{ minutes }}</span>:<span class="seconds">{{ seconds }}</span>
     <div class="interval-label">{{ isWork ? 'Work' : 'Break' }}</div>

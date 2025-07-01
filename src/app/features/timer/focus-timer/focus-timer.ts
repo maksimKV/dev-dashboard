@@ -34,6 +34,7 @@ export class FocusTimer implements OnInit, OnDestroy {
   isBrowser: boolean;
   isLoading = false;
   private finishAudio: HTMLAudioElement | null = null;
+  errorMessage = '';
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object, 
@@ -125,8 +126,7 @@ export class FocusTimer implements OnInit, OnDestroy {
     this.authService.updateFocusTimer(state).subscribe({
       next: () => {
       },
-      error: (error) => {
-        console.error('Failed to save timer state:', error);
+      error: () => {
         // Fallback to localStorage if API fails
         localStorage.setItem('focus-timer', JSON.stringify(state));
       }
@@ -135,8 +135,8 @@ export class FocusTimer implements OnInit, OnDestroy {
 
   loadState() {
     if (!this.isBrowser) return;
-    
     this.isLoading = true;
+    this.errorMessage = '';
     this.authService.getUserData().subscribe({
       next: (userData) => {
         const s = userData.focusTimer || {};
@@ -150,8 +150,7 @@ export class FocusTimer implements OnInit, OnDestroy {
         this.isLoading = false;
         this.cdr.detectChanges();
       },
-      error: (error) => {
-        console.error('Failed to load timer state from API:', error);
+      error: () => {
         // Fallback to localStorage
         const data = localStorage.getItem('focus-timer');
         if (data) {
@@ -164,7 +163,7 @@ export class FocusTimer implements OnInit, OnDestroy {
             this.isWork = s.isWork ?? true;
             this.completedFocusSessions = s.completedFocusSessions ?? 0;
             this.totalWorkSeconds = s.totalWorkSeconds ?? 0;
-          } catch (e) {
+          } catch {
             // fallback to defaults if corrupted
             this.workDuration = 25;
             this.breakDuration = 5;
@@ -173,8 +172,17 @@ export class FocusTimer implements OnInit, OnDestroy {
             this.isWork = true;
             this.completedFocusSessions = 0;
             this.totalWorkSeconds = 0;
-            console.error('Failed to parse focus-timer data:', e);
+            this.errorMessage = 'Could not load your timer state from API or local storage.';
           }
+        } else {
+          this.workDuration = 25;
+          this.breakDuration = 5;
+          this.timeLeft = 25 * 60;
+          this.isRunning = false;
+          this.isWork = true;
+          this.completedFocusSessions = 0;
+          this.totalWorkSeconds = 0;
+          this.errorMessage = 'Could not load your timer state from API or local storage.';
         }
         this.isLoading = false;
         this.cdr.detectChanges();
