@@ -193,15 +193,19 @@ const sendVerificationEmail = async (email, token) => {
     crossOriginEmbedderPolicy: false,
   }));
 
-  const allowedOrigins = FRONTEND_URL.split(',').map(url => url.trim());
+  const allowedOrigins = [
+    'https://dev-dashboard-y4gk.onrender.com',
+    'http://localhost:4200', // (optional, for local dev)
+  ];
 
   app.use(cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps, curl, etc.)
+      // Allow requests with no origin (like mobile apps, curl, or static asset requests)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       } else {
+        console.error('CORS rejected origin:', origin);
         return callback(new Error('Not allowed by CORS'));
       }
     },
