@@ -51,6 +51,8 @@
       </mat-form-field>
     </div>
 
+    <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
     <div class="snippets-list">
       <div *ngFor="let snippet of filteredSnippets" class="snippet-card">
         <div class="snippet-header">

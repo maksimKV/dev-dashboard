@@ -43,6 +43,7 @@ export class SnippetsPage implements OnInit {
   ];
   isBrowser: boolean;
   isLoading = false;
+  errorMessage = '';
 
   constructor(
     private clipboard: Clipboard,
@@ -132,23 +133,26 @@ export class SnippetsPage implements OnInit {
   loadSnippets() {
     if (!this.isBrowser) return;
     this.isLoading = true;
+    this.errorMessage = '';
     this.authService.getUserData().subscribe({
       next: (userData) => {
         this.snippets = userData.snippets || [];
         this.isLoading = false;
         this.cdr.detectChanges();
       },
-      error: (error) => {
-        console.error('Failed to load snippets from API:', error);
+      error: () => {
         // Fallback to localStorage
         const data = localStorage.getItem('snippets');
         if (data) {
           try {
             this.snippets = JSON.parse(data);
-          } catch (e) {
+          } catch {
             this.snippets = [];
-            console.error('Failed to parse snippets:', e);
+            this.errorMessage = 'Could not load your snippets from API or local storage.';
           }
+        } else {
+          this.snippets = [];
+          this.errorMessage = 'Could not load your snippets from API or local storage.';
         }
         this.isLoading = false;
         this.cdr.detectChanges();
