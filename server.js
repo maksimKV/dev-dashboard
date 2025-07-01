@@ -598,6 +598,17 @@ app.post('/api/dev/verify-user', (req, res) => {
   }
 });
 
+// Periodically clean up expired email verification tokens (every hour)
+setInterval(() => {
+  const now = Date.now();
+  const maxAge = 24 * 60 * 60 * 1000; // 24 hours in ms
+  for (const [token, data] of emailVerificationTokens.entries()) {
+    if (now - new Date(data.createdAt).getTime() > maxAge) {
+      emailVerificationTokens.delete(token);
+    }
+  }
+}, 60 * 60 * 1000); // every hour
+
 const port = process.env.PORT || 4000;
 const server = app.listen(port, () => {
   console.log(`Backend API server listening on http://localhost:${port}`);
