@@ -11,6 +11,23 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
+// Monkey-patch path-to-regexp to log offending input
+const Module = require('module');
+const originalRequire = Module.prototype.require;
+Module.prototype.require = function (path) {
+  const result = originalRequire.apply(this, arguments);
+  if (path === 'path-to-regexp') {
+    const origParse = result.parse;
+    result.parse = function (str, ...args) {
+      if (typeof str === 'string' && /^https?:\/\//.test(str)) {
+        console.error('[path-to-regexp] Full URL passed to parse():', str);
+      }
+      return origParse.call(this, str, ...args);
+    };
+  }
+  return result;
+};
+
 // Check for required environment variables
 const REQUIRED_ENV_VARS = ['JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS'];
 const missingVars = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
