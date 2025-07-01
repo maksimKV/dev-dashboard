@@ -13,3 +13,8 @@ interface WindowWithHLJS extends Window { hljs: typeof hljs }
 
 bootstrapApplication(App, appConfig)
   .catch((err) => console.error(err));
+
+// Add a global error handler for debugging
+window.addEventListener('error', (event) => {
+  console.error('Global error:', event.error);
+});
