@@ -74,6 +74,7 @@ function saveData() {
     const userDataJson = JSON.stringify(userDataArray, null, 2);
     fs.writeFileSync(USER_DATA_FILE, userDataJson);
   } catch (error) {
+    console.error('Error saving data:', error);
   }
 }
 
@@ -288,6 +289,8 @@ app.post('/api/auth/register', async (req, res) => {
       emailsBeingRegistered.delete(email);
     }
   } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Internal server error' });
     if (req.body && req.body.email) {
       emailsBeingRegistered.delete(req.body.email);
     }
@@ -347,6 +350,8 @@ app.post('/api/auth/login', async (req, res) => {
       user: { id: user.id, email: user.email }
     });
   } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -367,6 +372,8 @@ app.get('/api/user/data', authenticateToken, (req, res) => {
       preferences: data.preferences
     });
   } catch (error) {
+    console.error('Get user data error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -391,6 +398,8 @@ app.put('/api/user/kanban-tasks', authenticateToken, (req, res) => {
 
     res.json({ message: 'Kanban tasks updated successfully' });
   } catch (error) {
+    console.error('Update kanban tasks error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -415,6 +424,8 @@ app.put('/api/user/focus-timer', authenticateToken, (req, res) => {
 
     res.json({ message: 'Focus timer updated successfully' });
   } catch (error) {
+    console.error('Update focus timer error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -441,6 +452,8 @@ app.put('/api/user/markdown-note', authenticateToken, (req, res) => {
 
     res.json({ message: 'Markdown note updated successfully' });
   } catch (error) {
+    console.error('Update markdown note error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -472,6 +485,8 @@ app.put('/api/user/snippets', authenticateToken, (req, res) => {
 
     res.json({ message: 'Snippets updated successfully' });
   } catch (error) {
+    console.error('Update snippets error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -496,6 +511,8 @@ app.put('/api/user/preferences', authenticateToken, (req, res) => {
 
     res.json({ message: 'Preferences updated successfully' });
   } catch (error) {
+    console.error('Update preferences error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -539,6 +556,8 @@ app.get('/api/auth/verify-email', (req, res) => {
       user: { id: user.id, email: user.email }
     });
   } catch (error) {
+    console.error('Verify email error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -584,6 +603,8 @@ app.post('/api/auth/resend-verification', async (req, res) => {
       res.status(500).json({ error: 'Failed to send verification email' });
     }
   } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -612,6 +633,8 @@ app.post('/api/test-email', async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Test email error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -637,6 +660,8 @@ app.post('/api/dev/verify-user', (req, res) => {
       user: { id: user.id, email: user.email, isVerified: user.isVerified }
     });
   } catch (error) {
+    console.error('Dev verify user error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -653,6 +678,10 @@ setInterval(() => {
 
 const port = process.env.PORT || 4000;
 const server = app.listen(port);
+
+server.on('error', (error) => {
+  console.error('Server error:', error);
+});
 
 process.on('SIGINT', () => {
   server.close(() => {
