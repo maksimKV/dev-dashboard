@@ -7,8 +7,6 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:dev-dashboard": "node dist/dev-dashboard/server/server.mjs",
-    "server": "node server.js",
     "lint": "eslint \"src/**/*.{ts,html}\" --max-warnings=0",
     "format": "prettier --write \"src/**/*.{ts,html,scss,css,md}\""
   },

@@ -623,12 +623,16 @@ const sendVerificationEmail = async (email, token) => {
   // ==========================
   // 8. ANGULAR FRONTEND SERVE
   // ==========================
-  const frontendDir = path.join(__dirname, 'dist', 'dev-dashboard');
-  app.use(express.static(frontendDir));
+  // Serve static files from Angular build output (browser subfolder)
+  const frontendDir = path.join(__dirname, 'dist', 'dev-dashboard', 'browser');
+  app.use(express.static(frontendDir, {
+    maxAge: '1y', // Cache static assets for 1 year
+    index: false  // Don't serve index.html automatically
+  }));
 
-  // Angular routing fallback
-  app.use((req, res, next) => {
-    if (req.path.startsWith('/api/')) return next(); // skip API routes
+  // Angular routing fallback: send index.html for all non-API, non-static requests
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
     res.sendFile(path.join(frontendDir, 'index.html'));
   });
 
