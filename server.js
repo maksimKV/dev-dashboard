@@ -82,9 +82,12 @@ function loadData() {
 // Save data to files
 function saveData() {
   try {
+    console.log('[saveData] Saving', users.length, 'users and', userData.size, 'userData entries');
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
     const userDataArray = Array.from(userData.entries());
-    fs.writeFileSync(USER_DATA_FILE, JSON.stringify(userDataArray, null, 2));
+    const userDataJson = JSON.stringify(userDataArray, null, 2);
+    console.log('[saveData] Writing to userData.json:', userDataJson.slice(0, 200), userDataJson.length > 200 ? '...' : '');
+    fs.writeFileSync(USER_DATA_FILE, userDataJson);
     console.log('Data saved to files successfully');
   } catch (error) {
     console.error('Error saving data:', error);
@@ -401,6 +404,7 @@ app.put('/api/user/kanban-tasks', authenticateToken, (req, res) => {
     userData.set(userId, data);
 
     // Save data to files
+    console.log('[kanban-tasks] Calling saveData after updating kanbanTasks');
     saveData();
 
     res.json({ message: 'Kanban tasks updated successfully' });

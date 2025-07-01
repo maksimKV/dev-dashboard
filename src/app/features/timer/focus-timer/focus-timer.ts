@@ -143,6 +143,7 @@ export class FocusTimer implements OnInit, OnDestroy {
         this.completedFocusSessions = s.completedFocusSessions ?? 0;
         this.totalWorkSeconds = s.totalWorkSeconds ?? 0;
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to load timer state from API:', error);
@@ -171,6 +172,7 @@ export class FocusTimer implements OnInit, OnDestroy {
           }
         }
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }

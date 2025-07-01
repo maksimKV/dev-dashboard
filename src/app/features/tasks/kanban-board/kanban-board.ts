@@ -1,4 +1,4 @@
-import { Component, Inject, PLATFORM_ID, OnInit } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { CdkDragDrop, moveItemInArray, transferArrayItem, DragDropModule } from '@angular/cdk/drag-drop';
 import { Task } from '../../../shared/models/task.model';
@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../shared/services/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-kanban-board',
@@ -24,7 +25,7 @@ import { AuthService } from '../../../shared/services/auth.service';
   templateUrl: './kanban-board.html',
   styleUrl: './kanban-board.scss',
 })
-export class KanbanBoard implements OnInit {
+export class KanbanBoard implements OnInit, OnDestroy {
   todo: Task[] = [];
   inProgress: Task[] = [];
   done: Task[] = [];
@@ -33,10 +34,12 @@ export class KanbanBoard implements OnInit {
   newTaskDescription = '';
   isBrowser: boolean;
   isLoading = false;
+  private authSub: Subscription | undefined;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
@@ -44,6 +47,17 @@ export class KanbanBoard implements OnInit {
   ngOnInit() {
     if (this.isBrowser) {
       this.loadTasks();
+      this.authSub = this.authService.isAuthenticated$.subscribe(isAuth => {
+        if (isAuth) {
+          this.loadTasks();
+        }
+      });
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.authSub) {
+      this.authSub.unsubscribe();
     }
   }
 
@@ -110,6 +124,7 @@ export class KanbanBoard implements OnInit {
         this.inProgress = userData.kanbanTasks?.inProgress || [];
         this.done = userData.kanbanTasks?.done || [];
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to load tasks from API:', error);
@@ -129,6 +144,7 @@ export class KanbanBoard implements OnInit {
           }
         }
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }

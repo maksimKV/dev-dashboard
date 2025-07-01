@@ -1,4 +1,4 @@
-import { Component, Inject, PLATFORM_ID, OnInit } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MarkdownModule } from 'ngx-markdown';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -30,7 +30,8 @@ export class NotesPage implements OnInit {
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
@@ -64,12 +65,19 @@ export class NotesPage implements OnInit {
       next: (userData) => {
         this.markdown = userData.markdownNote || '';
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to load note from API:', error);
         // Fallback to localStorage
-        this.markdown = localStorage.getItem('markdown-note') || '';
+        const data = localStorage.getItem('markdown-note');
+        if (data) {
+          this.markdown = data;
+        } else {
+          this.markdown = '';
+        }
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }

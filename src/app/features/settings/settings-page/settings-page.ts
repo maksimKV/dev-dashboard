@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { AuthService } from '../../../shared/services/auth.service';
 
 // Try different import approaches
 // import { environment } from '../../../../environments/environment';
@@ -149,7 +150,7 @@ export class SettingsPage implements OnInit {
   highContrast = false;
   keyboardShortcuts = true;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(@Inject(PLATFORM_ID) private platformId: Object, private authService: AuthService) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
       this.loadProductivityPrefs();
@@ -191,6 +192,8 @@ export class SettingsPage implements OnInit {
     localStorage.setItem('focus-break-duration', String(this.breakDuration));
     localStorage.setItem('enabled-features', JSON.stringify(this.features));
     window.dispatchEvent(new StorageEvent('storage', { key: 'enabled-features' }));
+    // Save to backend
+    this.saveAllPrefsToBackend();
     alert('Productivity preferences saved!');
   }
 
@@ -207,6 +210,8 @@ export class SettingsPage implements OnInit {
     localStorage.setItem('compact-mode', String(this.compactMode));
     localStorage.setItem('font-size', this.fontSize);
     window.dispatchEvent(new StorageEvent('storage', { key: 'sidebar-position' }));
+    // Save to backend
+    this.saveAllPrefsToBackend();
     alert('UI preferences saved!');
   }
 
@@ -220,6 +225,32 @@ export class SettingsPage implements OnInit {
     if (!this.isBrowser) return;
     localStorage.setItem('high-contrast', String(this.highContrast));
     localStorage.setItem('keyboard-shortcuts', String(this.keyboardShortcuts));
+    // Save to backend
+    this.saveAllPrefsToBackend();
     alert('Accessibility preferences saved!');
+  }
+
+  saveAllPrefsToBackend() {
+    const preferences = {
+      defaultLandingPage: this.defaultLandingPage,
+      focusDuration: this.focusDuration,
+      breakDuration: this.breakDuration,
+      features: this.features,
+      sidebarPosition: this.sidebarPosition,
+      compactMode: this.compactMode,
+      fontSize: this.fontSize,
+      highContrast: this.highContrast,
+      keyboardShortcuts: this.keyboardShortcuts
+    };
+    this.authService.updatePreferences(preferences).subscribe({
+      next: () => {
+        // Optionally show a success message or log
+        // alert('Preferences saved to backend!');
+      },
+      error: (err) => {
+        alert('Failed to save preferences to backend.');
+        console.error('Failed to save preferences to backend:', err);
+      }
+    });
   }
 }

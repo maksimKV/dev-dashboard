@@ -1,4 +1,4 @@
-import { Component, Inject, PLATFORM_ID, OnInit } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -47,7 +47,8 @@ export class SnippetsPage implements OnInit {
   constructor(
     private clipboard: Clipboard,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
@@ -128,16 +129,13 @@ export class SnippetsPage implements OnInit {
   }
 
   loadSnippets() {
-    if (!this.isBrowser) {
-      this.snippets = [];
-      return;
-    }
-    
+    if (!this.isBrowser) return;
     this.isLoading = true;
     this.authService.getUserData().subscribe({
       next: (userData) => {
         this.snippets = userData.snippets || [];
         this.isLoading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to load snippets from API:', error);
@@ -150,10 +148,9 @@ export class SnippetsPage implements OnInit {
             this.snippets = [];
             console.error('Failed to parse snippets:', e);
           }
-        } else {
-          this.snippets = [];
         }
         this.isLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }
