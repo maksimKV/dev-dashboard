@@ -42,6 +42,9 @@ const loginAttempts = new Map(); // email -> { count, lastAttempt, lockUntil }
 const MAX_ATTEMPTS = 5;
 const LOCK_TIME = 5 * 60 * 1000; // 5 minutes
 
+// In-memory registration attempts tracker for lockout/throttling
+const registrationAttempts = new Map(); // email -> { count, lockUntil }
+
 // Load data from files on startup
 function loadData() {
   try {
@@ -195,6 +198,13 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Email and password required' });
     }
 
+    // Account lockout/throttling logic for registration
+    const regAttempt = registrationAttempts.get(email) || { count: 0, lockUntil: 0 };
+    if (regAttempt.lockUntil && Date.now() < regAttempt.lockUntil) {
+      const wait = Math.ceil((regAttempt.lockUntil - Date.now()) / 1000);
+      return res.status(429).json({ error: `Too many registration attempts. Try again in ${wait} seconds.` });
+    }
+
     // Prevent concurrent registration for the same email
     if (emailsBeingRegistered.has(email)) {
       return res.status(429).json({ error: 'Registration already in progress for this email. Please wait.' });
@@ -204,16 +214,34 @@ app.post('/api/auth/register', async (req, res) => {
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+      regAttempt.count++;
+      if (regAttempt.count >= MAX_ATTEMPTS) {
+        regAttempt.lockUntil = Date.now() + LOCK_TIME;
+      }
+      registrationAttempts.set(email, regAttempt);
       return res.status(400).json({ error: 'Please enter a valid email address' });
     }
 
     if (password.length < 6) {
+      regAttempt.count++;
+      if (regAttempt.count >= MAX_ATTEMPTS) {
+        regAttempt.lockUntil = Date.now() + LOCK_TIME;
+      }
+      registrationAttempts.set(email, regAttempt);
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
     if (users.find(u => u.email === email)) {
+      regAttempt.count++;
+      if (regAttempt.count >= MAX_ATTEMPTS) {
+        regAttempt.lockUntil = Date.now() + LOCK_TIME;
+      }
+      registrationAttempts.set(email, regAttempt);
       return res.status(409).json({ error: 'Email already registered' });
     }
+
+    // Reset attempts on successful registration
+    registrationAttempts.delete(email);
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const verificationToken = generateVerificationToken();
