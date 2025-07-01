@@ -77,12 +77,20 @@ export class App implements OnInit, DoCheck {
         this.isMobile = true;
         this.sidenavMode = 'over';
         this.sidenavOpened = false;
-        setTimeout(() => this.sidenav.close(), 0);
+        setTimeout(() => {
+          if (this.sidenav && typeof this.sidenav.close === 'function') {
+            this.sidenav.close();
+          }
+        }, 0);
       } else {
         this.isMobile = false;
         this.sidenavMode = 'side';
         this.sidenavOpened = true;
-        setTimeout(() => this.sidenav.open(), 0);
+        setTimeout(() => {
+          if (this.sidenav && typeof this.sidenav.open === 'function') {
+            this.sidenav.open();
+          }
+        }, 0);
       }
       setTimeout(() => this.cdr.detectChanges(), 0);
     });

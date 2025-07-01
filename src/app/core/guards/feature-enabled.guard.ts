@@ -3,6 +3,7 @@ import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 
 export function featureEnabledGuard(featureKey: string): CanActivateFn {
+  // inject() is called inside the returned function, which is a valid Angular injection context
   return (route: ActivatedRouteSnapshot, state) => {
     const platformId = inject(PLATFORM_ID);
     const router = inject(Router);

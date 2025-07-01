@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { TimerPage } from './timer-page';
 
@@ -8,7 +9,10 @@ describe('TimerPage', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TimerPage]
+      imports: [
+        TimerPage,
+        HttpClientTestingModule
+      ]
     })
     .compileComponents();
 
