@@ -3,7 +3,12 @@
 A modern, fullstack developer productivity dashboard built with Angular 20+ and Express. Features include Kanban tasks, notes, focus timer, code snippets, user authentication, and more.
 
 ## 🚀 Live Demo
-[https://dev-dashboard-y4gk.onrender.com/](https://dev-dashboard-y4gk.onrender.com/)
+
+<https://dev-dashboard-y4gk.onrender.com/>
+
+## Disclaimer
+
+> **Note:** This app is hosted on Render's free tier. Free web services on Render [spin down after 15 minutes of inactivity and may take up to a minute to start up again when you visit the site](https://render.com/docs/free). If the app takes a while to load, please be patient while the server wakes up. This is expected behavior for free-tier deployments. [[source](https://render.com/docs/faq)]
 
 ---
 
@@ -32,7 +37,7 @@ A modern, fullstack developer productivity dashboard built with Angular 20+ and 
 
 ### Clone the Repository
 ```sh
-git clone https://github.com/your-username/dev-dashboard.git
+git clone https://github.com/maksimKV/dev-dashboard.git
 cd dev-dashboard
 ```
 
@@ -97,3 +102,5 @@ MIT
 
 ## Demo
 [https://dev-dashboard-y4gk.onrender.com/](https://dev-dashboard-y4gk.onrender.com/)
+
+[GitHub Repository](https://github.com/maksimKV/dev-dashboard)
